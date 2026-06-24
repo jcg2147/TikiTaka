@@ -1005,6 +1005,28 @@ function leaderboardConfigured(){
   }
 }
 
+function demoModeRequested(){
+  try {
+    const params=new URLSearchParams(window.location.search);
+    return params.get('demo')==='1'||params.get('autoplay')==='1';
+  } catch {
+    return false;
+  }
+}
+
+function startAutomatedDemo(){
+  playerProfile={username:'Demo Player',team:'United States',jerseyNumber:'00',demo:true};
+  clearTutorialPreview();
+  gameMode='tutorial';
+  activeChallenge=null;
+  showGame();
+  setupPuzzle(
+    {numbers:[...TUTORIAL_SAMPLE.numbers],defenders:[...TUTORIAL_SAMPLE.defenders]},
+    {startClock:true,statusText:'Demo mode — drag from 1, cover every open square, and finish on 4.'}
+  );
+  document.getElementById('tt-tutorial-note').classList.remove('hidden');
+}
+
 function gasRequest(action,params={}){
   return new Promise((resolve,reject)=>{
     if(!leaderboardConfigured()){
@@ -1375,6 +1397,10 @@ function initWelcome(){
     playerProfile={username:'',team:''};
     showProfileForm(currentProfile);
   });
+  if(demoModeRequested()){
+    startAutomatedDemo();
+    return;
+  }
   const savedProfile=loadSavedProfile();
   if(savedProfile){
     renderProfileCard(savedProfile);
