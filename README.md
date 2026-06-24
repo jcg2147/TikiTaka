@@ -39,7 +39,7 @@ This repository includes `.gitlab-ci.yml` for GitLab Pages. On the default branc
 
 Playable link:
 
-[Play Tiki-Taka on GitLab Pages](https://rc-ai-learning.gitlab.io/juan-garcia-tiki-taka/)
+[Play Tiki-Taka on GitLab Pages](http://juan-garcia-tiki-taka-c4f92c.pages.git.ringcentral.com/)
 
 ## Shared Leaderboard
 
