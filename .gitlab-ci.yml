@@ -1,0 +1,18 @@
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp index.html public/index.html
+    - cp tiki_taka_v6_trionda.html public/tiki_taka_v6_trionda.html
+    - cp -r assets public/assets
+  artifacts:
+    paths:
+      - public
+  environment:
+    name: gitlab-pages
+    url: $CI_PAGES_URL
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
