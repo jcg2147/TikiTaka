@@ -37,10 +37,6 @@ Open `index.html` or `tiki_taka_v6_trionda.html` in a browser.
 
 This repository includes `.gitlab-ci.yml` for GitLab Pages. On the default branch, CI copies the static files into `public/` and publishes them as a Pages artifact.
 
-Playable demo URL:
-
-http://juan-garcia-tiki-taka-c4f92c.pages.git.ringcentral.com/tiki_taka_v6_trionda.html?demo=1
-
 Playable challenge URL:
 
 [Play Tiki-Taka on GitLab Pages](http://juan-garcia-tiki-taka-c4f92c.pages.git.ringcentral.com/)
