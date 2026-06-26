@@ -15,6 +15,7 @@ const INDIVIDUAL_HEADERS = [
 ];
 
 const COUNTRY_HEADERS = [
+  'date',
   'country',
   'plays',
   'fastestGoal',
@@ -209,51 +210,9 @@ function listCountryScores_(params) {
   const limit = Math.max(1, Math.min(Number(params.limit) || 10, 50));
   const sortMode = params.sort === 'average' ? 'average' : 'fastest';
   const challengeDate = cleanDate_(params.challengeDate);
-  if (challengeDate) {
-    return { ok: true, countries: buildCountryRows_(readIndividualScores_().filter(score => score.challengeDate === challengeDate), sortMode, limit) };
-  }
-  rebuildCountryScores_();
-  const sheet = getSheet_(COUNTRY_SHEET_NAME, COUNTRY_HEADERS);
-  const values = sheet.getDataRange().getValues();
-  const displayValues = sheet.getDataRange().getDisplayValues();
-  if (values.length <= 1) return { ok: true, countries: [] };
-
-  const countries = values.slice(1)
-    .map((row, i) => {
-      const displayRow = displayValues[i + 1];
-      const bestTimeSeconds = parseTime_(displayRow[2] && displayRow[2].indexOf(':') >= 0 ? displayRow[2] : row[2]);
-      const averageTimeSeconds = parseTime_(displayRow[3] && displayRow[3].indexOf(':') >= 0 ? displayRow[3] : row[3]);
-      return {
-        team: String(row[0] || ''),
-        plays: Number(row[1]) || 0,
-        fastestGoal: formatTime_(bestTimeSeconds),
-        bestTime: formatTime_(bestTimeSeconds),
-        averageTime: formatTime_(averageTimeSeconds),
-        averageMatchTime: formatTime_(averageTimeSeconds),
-        fastestGoalSeconds: bestTimeSeconds,
-        averageTimeSeconds,
-        lastPlayed: row[4] instanceof Date ? row[4].toISOString() : String(row[4] || '')
-      };
-    })
-    .filter(row => row.team && Number.isFinite(row.fastestGoalSeconds) && Number.isFinite(row.averageTimeSeconds))
-    .sort((a, b) => {
-      if (sortMode === 'average') {
-        return a.averageTimeSeconds - b.averageTimeSeconds || a.fastestGoalSeconds - b.fastestGoalSeconds || b.plays - a.plays || a.team.localeCompare(b.team);
-      }
-      return a.fastestGoalSeconds - b.fastestGoalSeconds || b.plays - a.plays || a.team.localeCompare(b.team);
-    })
-    .slice(0, limit)
-    .map(row => ({
-      team: row.team,
-      plays: row.plays,
-      fastestGoal: row.fastestGoal,
-      bestTime: row.bestTime,
-      averageTime: row.averageTime,
-      averageMatchTime: row.averageMatchTime,
-      lastPlayed: row.lastPlayed
-    }));
-
-  return { ok: true, countries };
+  const scores = readIndividualScores_();
+  const scopedScores = challengeDate ? scores.filter(score => score.challengeDate === challengeDate) : scores;
+  return { ok: true, countries: buildCountryRows_(scopedScores, sortMode, limit) };
 }
 
 function getPlayerProgress_(params) {
@@ -283,6 +242,7 @@ function buildCountryRows_(scores, sortMode, limit) {
     if (!byTeam[score.team]) {
       byTeam[score.team] = {
         team: score.team,
+        challengeDate: score.challengeDate,
         plays: 0,
         totalTime: 0,
         fastestGoal: Number.POSITIVE_INFINITY,
@@ -290,6 +250,7 @@ function buildCountryRows_(scores, sortMode, limit) {
       };
     }
     const team = byTeam[score.team];
+    if (team.challengeDate !== score.challengeDate) team.challengeDate = '';
     team.plays += 1;
     team.totalTime += score.totalMatchTimeSeconds;
     score.puzzleTimes.forEach(time => {
@@ -300,6 +261,7 @@ function buildCountryRows_(scores, sortMode, limit) {
 
   return Object.values(byTeam)
     .map(team => ({
+      challengeDate: team.challengeDate,
       team: team.team,
       plays: team.plays,
       fastestGoal: formatTime_(team.fastestGoal),
@@ -318,6 +280,7 @@ function buildCountryRows_(scores, sortMode, limit) {
     })
     .slice(0, limit)
     .map(row => ({
+      challengeDate: row.challengeDate,
       team: row.team,
       plays: row.plays,
       fastestGoal: row.fastestGoal,
@@ -330,20 +293,32 @@ function buildCountryRows_(scores, sortMode, limit) {
 
 function rebuildCountryScores_() {
   const scores = readIndividualScores_();
-  const rows = buildCountryRows_(scores, 'fastest', Math.max(scores.length, 1))
-    .map(team => [
-      team.team,
-      team.plays,
-      team.fastestGoal,
-      team.averageTime,
-      team.lastPlayed
-    ]);
+  const scoresByDate = {};
+  scores.forEach(score => {
+    if (!scoresByDate[score.challengeDate]) scoresByDate[score.challengeDate] = [];
+    scoresByDate[score.challengeDate].push(score);
+  });
+  const rows = Object.keys(scoresByDate)
+    .sort((a, b) => b.localeCompare(a))
+    .flatMap(date => buildCountryRows_(scoresByDate[date], 'fastest', Math.max(scoresByDate[date].length, 1))
+      .map(team => [
+        date,
+        team.team,
+        team.plays,
+        team.fastestGoal,
+        team.averageMatchTime,
+        team.lastPlayed
+      ]));
 
   const sheet = getSheet_(COUNTRY_SHEET_NAME, COUNTRY_HEADERS);
   const existingRows = Math.max(sheet.getLastRow() - 1, 0);
   if (existingRows) sheet.getRange(2, 1, existingRows, COUNTRY_HEADERS.length).clearContent();
   applySheetFormats_(sheet, COUNTRY_SHEET_NAME);
   if (rows.length) sheet.getRange(2, 1, rows.length, COUNTRY_HEADERS.length).setValues(rows);
+}
+
+function rebuildCountryScores() {
+  rebuildCountryScores_();
 }
 
 function readIndividualScores_() {
@@ -459,7 +434,8 @@ function applySheetFormats_(sheet, name) {
     sheet.getRange(1, 4, rowCount, 5).setNumberFormat('@');
   }
   if (name === COUNTRY_SHEET_NAME) {
-    sheet.getRange(1, 3, rowCount, 2).setNumberFormat('@');
+    sheet.getRange(1, 1, rowCount, 1).setNumberFormat('@');
+    sheet.getRange(1, 4, rowCount, 2).setNumberFormat('@');
   }
   if (name === PLAYERS_SHEET_NAME) {
     sheet.getRange(1, 4, rowCount, 1).setNumberFormat('@');

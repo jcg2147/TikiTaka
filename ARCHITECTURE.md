@@ -84,7 +84,7 @@ The browser uses a generated JSONP callback name and a `<script>` tag request, w
 The script targets the configured spreadsheet ID and maintains three tabs:
 
 - `Individual Scores`: append-only completed match log with `serverTimestamp`, `playerName`, `country`, `date`, `puzzle1Time`, `puzzle2Time`, `puzzle3Time`, and `totalMatchTime`.
-- `Country Scores`: aggregate rows by selected country with `country`, `plays`, formatted `fastestGoal`, formatted `averageMatchTime`, and `lastPlayed`.
+- `Country Scores`: date-scoped aggregate rows by selected country with `date`, `country`, `plays`, formatted `fastestGoal`, formatted `averageMatchTime`, and `lastPlayed`.
 - `Players`: player registry with `serverTimestamp`, `username`, `team`, `jerseyNumber`, and `lastSeen`.
 
 Jersey number assignments are stored in the `Players` tab by normalized `username` + `team`. This keeps score history separate from player identity while still allowing the UI to show stable numbers like `01`, `02`, and `03` in join order for each country.

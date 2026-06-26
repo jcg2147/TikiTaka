@@ -85,7 +85,7 @@ Out of scope for MVP:
 - Reset path clears the drawn path without changing the current match puzzle.
 - Next puzzle serves the next match puzzle only after the current puzzle is solved.
 - A valid solution triggers GOAL, confetti, and the ball animation.
-- A configured Apps Script endpoint records completed matches in an `Individual Scores` sheet, updates `Country Scores`, rejects duplicate match submissions per username/date, and returns leaderboard rows.
+- A configured Apps Script endpoint records completed matches in an `Individual Scores` sheet, updates date-scoped `Country Scores`, rejects duplicate match submissions per username/date, and returns leaderboard rows for the requested challenge date.
 - The `Players` sheet preserves static jersey numbers for returning `username` + `team` pairs.
 - The project contains `README.md`, `SPEC.md`, `ARCHITECTURE.md`, and `RETROSPECTIVE.md`.
 - The project can be committed to GitLab and published with the included GitLab Pages pipeline.

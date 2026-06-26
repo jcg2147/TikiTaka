@@ -45,6 +45,8 @@ Playable challenge URL:
 
 The game supports a shared Google Sheets leaderboard through a Google Apps Script web app.
 
+`Individual Scores` stores one completed match per player/date with three puzzle split times and `totalMatchTime`. `Country Scores` stores one aggregate row per date/country with `date`, `country`, `plays`, `fastestGoal`, `averageMatchTime`, and `lastPlayed`, so each day's leaderboard is calculated independently.
+
 Do not store private tokens or credentials in the repository. The Apps Script URL is public by design, so this leaderboard is suitable for challenge/demo use rather than fraud-resistant production scoring.
 
 ## Project Files
