@@ -1188,14 +1188,24 @@ function startAutomatedDemo(){
 
 async function _fetchCountryScores(challengeDate,sortMode){
   try{
-    let q=_supabase.from('individual_scores').select('team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp');
+    let q=_supabase.from('individual_scores').select('user_id,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp');
     if(challengeDate) q=q.eq('challenge_date',challengeDate);
     const{data,error}=await q;
     if(error) throw error;
+    const rows=data||[];
+    // Resolve teams from players table to prevent localStorage spoofing
+    const userIds=[...new Set(rows.filter(r=>r.user_id).map(r=>r.user_id))];
+    const teamMap={};
+    if(userIds.length){
+      const{data:pRows}=await _supabase.from('players').select('user_id,team').in('user_id',userIds);
+      (pRows||[]).forEach(p=>{teamMap[p.user_id]=p.team;});
+    }
     const byTeam={};
-    (data||[]).forEach(row=>{
-      if(!byTeam[row.team]) byTeam[row.team]={team:row.team,plays:0,totalTime:0,fastestGoal:Infinity,lastPlayed:''};
-      const t=byTeam[row.team];
+    rows.forEach(row=>{
+      const team=teamMap[row.user_id];
+      if(!team) return;
+      if(!byTeam[team]) byTeam[team]={team,plays:0,totalTime:0,fastestGoal:Infinity,lastPlayed:''};
+      const t=byTeam[team];
       t.plays+=1; t.totalTime+=row.total_match_time_secs;
       [row.puzzle1_time_secs,row.puzzle2_time_secs,row.puzzle3_time_secs].forEach(s=>{if(s<t.fastestGoal)t.fastestGoal=s;});
       if(!t.lastPlayed||row.server_timestamp>t.lastPlayed) t.lastPlayed=row.server_timestamp;
