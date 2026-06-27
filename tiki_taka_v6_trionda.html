@@ -22,6 +22,10 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 .tt-field label,.tt-section-kicker{font-size:12px;font-weight:700;color:var(--color-text-secondary,#526052);text-transform:uppercase}
 #tt-username{width:100%;height:38px;border-radius:6px;border:1px solid var(--color-border-secondary,#cfd8cf);background:var(--color-background-primary,#fff);color:var(--color-text-primary,#101510);font:inherit;padding:0 10px}
 #tt-username:focus{outline:2px solid #f5c842;outline-offset:1px}
+#tt-username-status{font-size:11px;min-height:14px;display:block}
+#tt-username-status.available{color:#1a7a4a}
+#tt-username-status.taken{color:#c0392b}
+#tt-username-status.checking{color:var(--color-text-secondary,#526052)}
 #tt-team-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;max-height:214px;overflow-y:auto;padding:2px}
 .tt-team-option{height:30px;border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;background:var(--color-background-primary,#fff);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .tt-team-option:hover{background:var(--color-background-secondary,#f4f7f4)}
@@ -149,6 +153,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
         <div class="tt-field">
           <label for="tt-username">Username</label>
           <input id="tt-username" name="username" type="text" maxlength="18" autocomplete="nickname" required>
+          <span id="tt-username-status"></span>
         </div>
         <div class="tt-field">
           <label id="tt-team-label">Team you represent</label>
@@ -166,7 +171,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
           <div id="tt-jersey-number">01</div>
         </div>
         <div id="tt-profile-team">Team</div>
-        <button id="tt-change-profile" type="button">Change profile</button>
+        <button id="tt-change-profile" type="button">Edit profile</button>
       </div>
     </section>
 
@@ -258,6 +263,7 @@ const _supabase = (typeof supabase !== 'undefined' && SUPABASE_URL && !SUPABASE_
   : null;
 
 const PROFILE_KEY='tt-player-profile';
+const PROFILE_CHANGE_KEY='tt-last-profile-change';
 const CHALLENGE_PROGRESS_KEY='tt-daily-match-progress-v2';
 const CHALLENGE_TIME_ZONE='America/New_York';
 const DAILY_PUZZLE_LIMIT=3;
@@ -334,6 +340,33 @@ const LEADERBOARD_HOOK={
   fetchAverageCountries:async challengeDate=>{
     if(!_supabase) return{ok:false,reason:'not_configured'};
     return _fetchCountryScores(challengeDate,'average');
+  },
+  updateProfile:async({oldUsername,oldTeam,newUsername,newTeam})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data:{user}}=await _supabase.auth.getUser();
+      let existing=null;
+      if(user&&!user.is_anonymous){
+        const{data}=await _supabase.from('players').select('*').eq('user_id',user.id).maybeSingle();
+        existing=data;
+      }
+      if(!existing){
+        const{data}=await _supabase.from('players').select('*').ilike('username',oldUsername).ilike('team',oldTeam).maybeSingle();
+        existing=data;
+      }
+      if(!existing) return{ok:false,error:'Player not found'};
+      let jerseyNumber=existing.jersey_number;
+      if(newTeam.toLowerCase()!==existing.team.toLowerCase()){
+        const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',newTeam).order('jersey_number',{ascending:false}).limit(1);
+        jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
+      }
+      const{error:upErr}=await _supabase.from('players').update({
+        username:newUsername,team:newTeam,jersey_number:jerseyNumber,
+        last_seen:new Date().toISOString(),last_name_change:currentChallengeDate()
+      }).eq('id',existing.id);
+      if(upErr) throw upErr;
+      return{ok:true,username:newUsername,team:newTeam,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
+    }catch(err){return{ok:false,error:err.message};}
   }
 };
 
@@ -346,6 +379,7 @@ let puzzle=null, path=[], dragging=false, timerInterval=null, timerSecs=0, solve
 let spinAnimId=null;
 let playerProfile={username:'',team:''};
 let gameMode='scored';
+let _isEditingProfile=false;
 let tutorialPreviewActive=false, tutorialPreviewTimers=[];
 let activeChallenge=null;
 
@@ -1141,6 +1175,20 @@ async function _fetchCountryScores(challengeDate,sortMode){
   }catch(err){return{ok:false,error:err.message};}
 }
 
+async function checkUsernameAvailable(username,currentUsername=''){
+  if(!_supabase||!username||username.length<2) return true;
+  if(username.toLowerCase()===currentUsername.toLowerCase()) return true;
+  const{data}=await _supabase.from('players').select('id').ilike('username',username).limit(1);
+  return !data?.length;
+}
+
+function canChangeProfileToday(){
+  return localStorage.getItem(PROFILE_CHANGE_KEY)!==currentChallengeDate();
+}
+function recordProfileChange(){
+  localStorage.setItem(PROFILE_CHANGE_KEY,currentChallengeDate());
+}
+
 function renderLeaderboardMessage(message,targetId){
   const list=document.getElementById(targetId);
   if(!list) return;
@@ -1371,7 +1419,10 @@ function initWelcome(){
   const tutorialButton=document.getElementById('tt-tutorial');
   const changeProfileButton=document.getElementById('tt-change-profile');
   const usernameInput=document.getElementById('tt-username');
+  const usernameStatus=document.getElementById('tt-username-status');
   const error=document.getElementById('tt-welcome-error');
+  let _usernameAvailable=true;
+  let _usernameCheckTimer=null;
   teamInput.value='';
   teamGrid.innerHTML='';
   WORLD_CUP_GROUPS.forEach(group=>{
@@ -1436,15 +1487,26 @@ function initWelcome(){
       error.textContent='Enter a username and choose a team.';
       return;
     }
+    if(!_usernameAvailable){
+      error.textContent='That username is already taken. Please choose another.';
+      return;
+    }
     loginButton.disabled=true;
     startButton.disabled=true;
     tutorialButton.disabled=true;
-    loginButton.textContent='Logging in...';
-    error.textContent='Logging in...';
+    loginButton.textContent='Saving...';
+    error.textContent='Saving...';
+    const oldProfile=loadSavedProfile()||playerProfile;
     let profile={username,team,jerseyNumber:'01'};
     try {
       if(leaderboardConfigured()){
-        const result=await LEADERBOARD_HOOK.registerPlayer({username,team});
+        let result;
+        if(_isEditingProfile&&oldProfile?.username){
+          result=await LEADERBOARD_HOOK.updateProfile({oldUsername:oldProfile.username,oldTeam:oldProfile.team,newUsername:username,newTeam:team});
+          if(result?.ok) recordProfileChange();
+        } else {
+          result=await LEADERBOARD_HOOK.registerPlayer({username,team});
+        }
         if(result?.ok){
           profile={username:result.username||username,team:result.team||team,jerseyNumber:result.jerseyNumber||'01'};
         } else {
@@ -1455,16 +1517,34 @@ function initWelcome(){
       renderProfileCard(profile);
       error.textContent='';
     } catch {
-      profile={...profile,jerseyNumber:fallbackJerseyNumberForTeam(team),needsRegistration:true};
+      profile={username,team,jerseyNumber:fallbackJerseyNumberForTeam(team),needsRegistration:true};
       saveProfile(profile);
       renderProfileCard(profile);
       error.textContent='Profile saved locally. Jersey number may update once Supabase is connected.';
     } finally {
+      _isEditingProfile=false;
       loginButton.disabled=false;
       loginButton.textContent='Login';
       updatePlayPanel();
     }
   }
+  usernameInput.addEventListener('input',()=>{
+    clearTimeout(_usernameCheckTimer);
+    const val=usernameInput.value.trim();
+    usernameStatus.textContent='';
+    usernameStatus.className='';
+    if(!val||val.length<2){_usernameAvailable=true;return;}
+    usernameStatus.textContent='Checking...';
+    usernameStatus.className='checking';
+    _usernameCheckTimer=setTimeout(async()=>{
+      const currentUsername=_isEditingProfile?(loadSavedProfile()||playerProfile)?.username||'':'';
+      const available=await checkUsernameAvailable(val,currentUsername);
+      _usernameAvailable=available;
+      usernameStatus.textContent=available?'✓ Username available':'✗ Username already taken';
+      usernameStatus.className=available?'available':'taken';
+    },400);
+  });
+
   document.getElementById('tt-start-form').addEventListener('submit',e=>{
     e.preventDefault();
     saveSelectedProfile();
@@ -1472,9 +1552,13 @@ function initWelcome(){
   startButton.addEventListener('click',()=>startSelectedGame('scored'));
   tutorialButton.addEventListener('click',()=>startSelectedGame('tutorial'));
   changeProfileButton.addEventListener('click',()=>{
+    if(!canChangeProfileToday()){
+      error.textContent="You've already edited your profile today. Come back tomorrow!";
+      return;
+    }
+    _isEditingProfile=true;
     const currentProfile=loadSavedProfile()||playerProfile;
-    clearSavedProfile();
-    playerProfile={username:'',team:''};
+    loginButton.textContent='Save changes';
     showProfileForm(currentProfile);
   });
   if(demoModeRequested()){
