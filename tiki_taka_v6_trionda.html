@@ -121,12 +121,11 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-celebration.show{display:flex}
 #tt-goal-text{font-size:52px;font-weight:500;color:#f5c842;letter-spacing:2px;animation:goalPop .5s cubic-bezier(.2,1.6,.4,1) both}
 #tt-goal-sub{font-size:15px;color:#fff;margin-top:8px;opacity:0;animation:fadeIn .4s .4s forwards}
-#tt-verify-prompt{display:none;margin-top:16px;text-align:center;background:rgba(255,255,255,.1);border-radius:8px;padding:14px 20px}
-#tt-verify-prompt.show{display:block}
-#tt-verify-prompt p{color:#fff;font-size:13px;margin-bottom:10px}
-#tt-google-signin{background:#fff;color:#1f1f1f;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:block;margin:0 auto}
-#tt-google-signin:hover{background:#f0f0f0}
-#tt-verify-skip{background:transparent;border:none;color:rgba(255,255,255,.55);font-size:12px;cursor:pointer;margin-top:8px;display:block;text-decoration:underline}
+#tt-google-gate{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px;text-align:center}
+#tt-google-gate.hidden{display:none}
+#tt-gate-sub{font-size:13px;color:var(--color-text-secondary,#526052)}
+#tt-google-gate-btn{background:#fff;border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;color:#1f1f1f;width:100%}
+#tt-google-gate-btn:hover{background:var(--color-background-secondary,#f4f7f4)}
 .tt-verified-badge{display:inline-block;margin-left:4px;background:#1a73e8;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;line-height:14px;text-align:center;font-weight:700;vertical-align:middle}
 #tt-confetti-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;overflow:hidden;z-index:998}
 .conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:confFall linear forwards}
@@ -165,6 +164,10 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
         </div>
         <div id="tt-welcome-error" role="status" aria-live="polite"></div>
       </form>
+      <div id="tt-google-gate" class="hidden">
+        <p id="tt-gate-sub">Sign in to track your score on the global leaderboard.</p>
+        <button id="tt-google-gate-btn" type="button">Sign in with Google</button>
+      </div>
       <div id="tt-profile-card" class="hidden" aria-live="polite">
         <div id="tt-jersey" aria-label="Player jersey">
           <div id="tt-jersey-name">Player</div>
@@ -232,11 +235,6 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
     <div id="tt-celebration">
       <div id="tt-goal-text">GOAL!</div>
       <div id="tt-goal-sub">Perfect pass sequence!</div>
-      <div id="tt-verify-prompt">
-        <p>Earn a verified badge on the leaderboard</p>
-        <button id="tt-google-signin" type="button">Sign in with Google</button>
-        <button id="tt-verify-skip" type="button">Skip</button>
-      </div>
     </div>
   </div>
   <div id="tt-controls">
@@ -281,7 +279,7 @@ const LEADERBOARD_HOOK={
       const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',team).order('jersey_number',{ascending:false}).limit(1);
       const jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
       const{data:{user:rUser}}=await _supabase.auth.getUser();
-      const{error:insErr}=await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null});
+      const{error:insErr}=await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null,is_verified:true});
       if(insErr){
         if(insErr.code==='23505'&&rUser?.id){
           const{data:existing2}=await _supabase.from('players').select('*').eq('user_id',rUser.id).maybeSingle();
@@ -392,6 +390,7 @@ let spinAnimId=null;
 let playerProfile={username:'',team:''};
 let gameMode='scored';
 let _isEditingProfile=false;
+let _authSession=null;
 let tutorialPreviewActive=false, tutorialPreviewTimers=[];
 let activeChallenge=null;
 
@@ -932,10 +931,6 @@ function triggerWin(){
           {serverSynced:true,puzzleTimes:completedState.puzzleTimes}
         );
         await loadLeaderboards();
-        if(_supabase){
-          const{data:{user}}=await _supabase.auth.getUser();
-          if(user?.is_anonymous) document.getElementById('tt-verify-prompt')?.classList.add('show');
-        }
       })
       .catch(()=>{syncChallengeProgressFromServer(playerProfile);});
   }
@@ -1316,7 +1311,7 @@ function setupPuzzle(nextPuzzle,{startClock=true,statusText=null}={}){
   solved=false; dragging=false; path=[];
   if(spinAnimId){cancelAnimationFrame(spinAnimId);spinAnimId=null;}
   document.getElementById('tt-celebration').classList.remove('show');
-  document.getElementById('tt-verify-prompt')?.classList.remove('show');
+
   document.getElementById('tt-confetti-wrap').innerHTML='';
   document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
   const ball=document.getElementById('tt-ball');
@@ -1405,7 +1400,7 @@ function showIntro(){
   document.getElementById('tt-root').classList.add('hidden');
   document.getElementById('tt-intro').classList.remove('hidden');
   document.getElementById('tt-celebration').classList.remove('show');
-  document.getElementById('tt-verify-prompt')?.classList.remove('show');
+
   document.getElementById('tt-confetti-wrap').innerHTML='';
   document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
   document.getElementById('tt-ball').style.display='none';
@@ -1577,6 +1572,10 @@ function initWelcome(){
     startAutomatedDemo();
     return;
   }
+  if(!_authSession&&_supabase){
+    loadLeaderboards();
+    return;
+  }
   const savedProfile=loadSavedProfile();
   if(savedProfile){
     renderProfileCard(savedProfile);
@@ -1589,29 +1588,20 @@ function initWelcome(){
 async function initAuth(){
   if(!_supabase) return;
   try{
-    const fromOAuth=new URLSearchParams(location.search).has('code')||location.hash.includes('access_token');
-    _supabase.auth.onAuthStateChange(async(event,session)=>{
-      if(fromOAuth&&(event==='SIGNED_IN'||event==='USER_UPDATED')&&session?.user&&!session.user.is_anonymous){
-        await _supabase.from('players').update({is_verified:true}).eq('user_id',session.user.id);
-        document.getElementById('tt-verify-prompt')?.classList.remove('show');
-        loadLeaderboards();
-      }
-    });
     const{data:{session}}=await _supabase.auth.getSession();
-    if(!session) await _supabase.auth.signInAnonymously();
+    _authSession=session;
+    if(!session){
+      document.getElementById('tt-start-form').classList.add('hidden');
+      document.getElementById('tt-profile-card').classList.add('hidden');
+      document.getElementById('tt-google-gate').classList.remove('hidden');
+      document.getElementById('tt-google-gate-btn').addEventListener('click',()=>{
+        _supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+      });
+    }
   }catch(e){console.warn('Auth init failed:',e);}
-  document.getElementById('tt-google-signin')?.addEventListener('click',async()=>{
-    try{
-      await _supabase.auth.linkIdentity({provider:'google',options:{redirectTo:location.origin+location.pathname}});
-    }catch(e){console.warn('Google sign-in failed:',e);}
-  });
-  document.getElementById('tt-verify-skip')?.addEventListener('click',()=>{
-    document.getElementById('tt-verify-prompt')?.classList.remove('show');
-  });
 }
 
-initAuth();
-initWelcome();
+initAuth().then(()=>initWelcome());
 </script>
 </body>
 </html>
