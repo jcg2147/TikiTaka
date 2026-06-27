@@ -1679,6 +1679,22 @@ function initWelcome(){
   if(savedProfile){
     renderProfileCard(savedProfile);
     refreshProfileRegistration(savedProfile);
+  } else if(_authSession&&_supabase){
+    (async()=>{
+      try{
+        const{data:existing}=await _supabase.from('players').select('*').eq('user_id',_authSession.user.id).maybeSingle();
+        if(existing){
+          const profile={username:existing.username,team:existing.team,jerseyNumber:String(existing.jersey_number).padStart(2,'0')};
+          saveProfile(profile);
+          renderProfileCard(profile);
+          updatePlayPanel();
+        } else {
+          showProfileForm();
+        }
+      } catch {
+        showProfileForm();
+      }
+    })();
   } else {
     showProfileForm();
   }
