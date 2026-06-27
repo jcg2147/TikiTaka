@@ -117,6 +117,13 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-celebration.show{display:flex}
 #tt-goal-text{font-size:52px;font-weight:500;color:#f5c842;letter-spacing:2px;animation:goalPop .5s cubic-bezier(.2,1.6,.4,1) both}
 #tt-goal-sub{font-size:15px;color:#fff;margin-top:8px;opacity:0;animation:fadeIn .4s .4s forwards}
+#tt-verify-prompt{display:none;margin-top:16px;text-align:center;background:rgba(255,255,255,.1);border-radius:8px;padding:14px 20px}
+#tt-verify-prompt.show{display:block}
+#tt-verify-prompt p{color:#fff;font-size:13px;margin-bottom:10px}
+#tt-google-signin{background:#fff;color:#1f1f1f;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:block;margin:0 auto}
+#tt-google-signin:hover{background:#f0f0f0}
+#tt-verify-skip{background:transparent;border:none;color:rgba(255,255,255,.55);font-size:12px;cursor:pointer;margin-top:8px;display:block;text-decoration:underline}
+.tt-verified-badge{display:inline-block;margin-left:4px;background:#1a73e8;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;line-height:14px;text-align:center;font-weight:700;vertical-align:middle}
 #tt-confetti-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;overflow:hidden;z-index:998}
 .conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:confFall linear forwards}
 @keyframes goalPop{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -220,6 +227,11 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
     <div id="tt-celebration">
       <div id="tt-goal-text">GOAL!</div>
       <div id="tt-goal-sub">Perfect pass sequence!</div>
+      <div id="tt-verify-prompt">
+        <p>Earn a verified badge on the leaderboard</p>
+        <button id="tt-google-signin" type="button">Sign in with Google</button>
+        <button id="tt-verify-skip" type="button">Skip</button>
+      </div>
     </div>
   </div>
   <div id="tt-controls">
@@ -262,13 +274,15 @@ const LEADERBOARD_HOOK={
       }
       const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',team).order('jersey_number',{ascending:false}).limit(1);
       const jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
-      await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString()});
+      const{data:{user:rUser}}=await _supabase.auth.getUser();
+      await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null});
       return{ok:true,username,team,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
     }catch(err){return{ok:false,error:err.message};}
   },
   submitScore:async({username,playerName,team,country,challengeDate,date,puzzle1Time,puzzle2Time,puzzle3Time,totalMatchTime})=>{
     if(!_supabase) return{ok:false,reason:'not_configured'};
     try{
+      const{data:{user:sUser}}=await _supabase.auth.getUser();
       const{error}=await _supabase.from('individual_scores').insert({
         username:username||playerName||'Player',
         team:team||country,
@@ -276,7 +290,9 @@ const LEADERBOARD_HOOK={
         puzzle1_time_secs:_parseMMSS(puzzle1Time),
         puzzle2_time_secs:_parseMMSS(puzzle2Time),
         puzzle3_time_secs:_parseMMSS(puzzle3Time),
-        total_match_time_secs:_parseMMSS(totalMatchTime)
+        total_match_time_secs:_parseMMSS(totalMatchTime),
+        user_id:sUser?.id||null,
+        is_verified:sUser?!sUser.is_anonymous:false
       });
       if(error){
         if(error.code==='23505') return{ok:false,error:'Score already submitted for today'};
@@ -854,7 +870,7 @@ function triggerWin(){
     const scoreEntry=buildMatchScoreEntry(completedChallenge,completedState);
     LEADERBOARD_HOOK
       .submitScore(scoreEntry)
-      .then(result=>{
+      .then(async result=>{
         if(!result?.ok) throw new Error(result?.error||result?.reason||'Leaderboard update failed');
         mergeChallengeProgress(
           completedChallenge.date,
@@ -862,7 +878,11 @@ function triggerWin(){
           playerProfile,
           {serverSynced:true,puzzleTimes:completedState.puzzleTimes}
         );
-        return loadLeaderboards();
+        await loadLeaderboards();
+        if(_supabase){
+          const{data:{user}}=await _supabase.auth.getUser();
+          if(user?.is_anonymous) document.getElementById('tt-verify-prompt')?.classList.add('show');
+        }
       })
       .catch(()=>{syncChallengeProgressFromServer(playerProfile);});
   }
@@ -1148,6 +1168,7 @@ function renderIndividualLeaderboard(scores,targetId){
     flag.alt='';
     flag.title=score.team||'Team';
     name.textContent=score.username||'Player';
+    if(score.is_verified){const badge=document.createElement('span');badge.className='tt-verified-badge';badge.title='Verified with Google';badge.textContent='✓';name.appendChild(badge);}
     name.title=score.team?`${score.username||'Player'} (${score.team})`:name.textContent;
     time.textContent=String(score.totalMatchTime||score.time||score.timeFormatted||'00:00');
     row.append(rank,flag,name,time);
@@ -1228,6 +1249,7 @@ function setupPuzzle(nextPuzzle,{startClock=true,statusText=null}={}){
   solved=false; dragging=false; path=[];
   if(spinAnimId){cancelAnimationFrame(spinAnimId);spinAnimId=null;}
   document.getElementById('tt-celebration').classList.remove('show');
+  document.getElementById('tt-verify-prompt')?.classList.remove('show');
   document.getElementById('tt-confetti-wrap').innerHTML='';
   document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
   const ball=document.getElementById('tt-ball');
@@ -1316,6 +1338,7 @@ function showIntro(){
   document.getElementById('tt-root').classList.add('hidden');
   document.getElementById('tt-intro').classList.remove('hidden');
   document.getElementById('tt-celebration').classList.remove('show');
+  document.getElementById('tt-verify-prompt')?.classList.remove('show');
   document.getElementById('tt-confetti-wrap').innerHTML='';
   document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
   document.getElementById('tt-ball').style.display='none';
@@ -1460,6 +1483,30 @@ function initWelcome(){
   }
 }
 
+async function initAuth(){
+  if(!_supabase) return;
+  try{
+    const{data:{session}}=await _supabase.auth.getSession();
+    if(!session) await _supabase.auth.signInAnonymously();
+    _supabase.auth.onAuthStateChange(async(event,session)=>{
+      if(event==='USER_UPDATED'&&session?.user&&!session.user.is_anonymous){
+        await _supabase.from('individual_scores').update({is_verified:true}).eq('user_id',session.user.id);
+        document.getElementById('tt-verify-prompt')?.classList.remove('show');
+        loadLeaderboards();
+      }
+    });
+  }catch(e){console.warn('Auth init failed:',e);}
+  document.getElementById('tt-google-signin')?.addEventListener('click',async()=>{
+    try{
+      await _supabase.auth.linkIdentity({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+    }catch(e){console.warn('Google sign-in failed:',e);}
+  });
+  document.getElementById('tt-verify-skip')?.addEventListener('click',()=>{
+    document.getElementById('tt-verify-prompt')?.classList.remove('show');
+  });
+}
+
+initAuth();
 initWelcome();
 </script>
 </body>
