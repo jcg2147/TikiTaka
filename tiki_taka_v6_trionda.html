@@ -320,11 +320,11 @@ const LEADERBOARD_HOOK={
   fetchScores:async challengeDate=>{
     if(!_supabase) return{ok:false,reason:'not_configured'};
     try{
-      let q=_supabase.from('individual_scores').select('username,team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp').order('total_match_time_secs',{ascending:true}).order('server_timestamp',{ascending:true}).limit(LEADERBOARD_CONFIG.limit);
+      let q=_supabase.from('individual_scores').select('username,team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp,is_verified').order('total_match_time_secs',{ascending:true}).order('server_timestamp',{ascending:true}).limit(LEADERBOARD_CONFIG.limit);
       if(challengeDate) q=q.eq('challenge_date',challengeDate);
       const{data,error}=await q;
       if(error) throw error;
-      return{ok:true,scores:(data||[]).map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs)}))};
+      return{ok:true,scores:(data||[]).map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs),is_verified:r.is_verified}))};
     }catch(err){return{ok:false,error:err.message};}
   },
   fetchFastestCountries:async challengeDate=>{
