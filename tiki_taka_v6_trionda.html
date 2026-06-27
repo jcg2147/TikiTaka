@@ -157,7 +157,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
       <div id="tt-welcome-sub">Build your player profile and choose your side.</div>
       <form id="tt-start-form">
         <div id="tt-edit-context" class="hidden">
-          <div class="tt-edit-notice">You can only edit your profile once per day.</div>
+          <div class="tt-edit-notice">You can only edit your profile 3 times per day.</div>
           <div class="tt-current-row">
             <span class="tt-current-label">Current username</span>
             <span id="tt-current-username" class="tt-current-value"></span>
@@ -1597,7 +1597,7 @@ function initWelcome(){
   const profileCardError=document.getElementById('tt-profile-card-error');
   changeProfileButton.addEventListener('click',()=>{
     if(!canChangeProfileToday()){
-      profileCardError.textContent=`You've already changed your profile ${PROFILE_CHANGE_LIMIT} times today, which is the limit. Please wait until tomorrow to make further changes.`;
+      profileCardError.textContent=`You've already reached the daily limit of profile changes for today.`;
       return;
     }
     profileCardError.textContent='';
