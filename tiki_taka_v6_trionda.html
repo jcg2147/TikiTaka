@@ -133,7 +133,6 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-gate-sub{font-size:13px;color:var(--color-text-secondary,#526052)}
 #tt-google-gate-btn{background:#fff;border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;color:#1f1f1f;width:100%}
 #tt-google-gate-btn:hover{background:var(--color-background-secondary,#f4f7f4)}
-.tt-verified-badge{display:inline-block;margin-left:4px;background:#1a73e8;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;line-height:14px;text-align:center;font-weight:700;vertical-align:middle}
 #tt-confetti-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;overflow:hidden;z-index:998}
 .conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:confFall linear forwards}
 @keyframes goalPop{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -297,7 +296,7 @@ const LEADERBOARD_HOOK={
       const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',team).order('jersey_number',{ascending:false}).limit(1);
       const jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
       const{data:{user:rUser}}=await _supabase.auth.getUser();
-      const{error:insErr}=await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null,is_verified:true});
+      const{error:insErr}=await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null});
       if(insErr){
         if(insErr.code==='23505'&&rUser?.id){
           const{data:existing2}=await _supabase.from('players').select('*').eq('user_id',rUser.id).maybeSingle();
@@ -346,13 +345,7 @@ const LEADERBOARD_HOOK={
       const{data,error}=await q;
       if(error) throw error;
       const rows=data||[];
-      const userIds=[...new Set(rows.filter(r=>r.user_id).map(r=>r.user_id))];
-      let verifiedSet=new Set();
-      if(userIds.length){
-        const{data:vp}=await _supabase.from('players').select('user_id').eq('is_verified',true).in('user_id',userIds);
-        verifiedSet=new Set((vp||[]).map(p=>p.user_id));
-      }
-      return{ok:true,scores:rows.map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs),is_verified:r.user_id?verifiedSet.has(r.user_id):false}))};
+      return{ok:true,scores:rows.map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs)}))};
     }catch(err){return{ok:false,error:err.message};}
   },
   fetchFastestCountries:async challengeDate=>{
@@ -1265,7 +1258,6 @@ function renderIndividualLeaderboard(scores,targetId){
     flag.alt='';
     flag.title=score.team||'Team';
     name.textContent=score.username||'Player';
-    if(score.is_verified){const badge=document.createElement('span');badge.className='tt-verified-badge';badge.title='Verified with Google';badge.textContent='✓';name.appendChild(badge);}
     name.title=score.team?`${score.username||'Player'} (${score.team})`:name.textContent;
     time.textContent=String(score.totalMatchTime||score.time||score.timeFormatted||'00:00');
     row.append(rank,flag,name,time);
