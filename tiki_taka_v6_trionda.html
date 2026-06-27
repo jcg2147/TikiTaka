@@ -55,6 +55,8 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-jersey::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--jersey-accent) 0 16px,transparent 16px),linear-gradient(180deg,rgba(255,255,255,.18),transparent 26%,rgba(0,0,0,.08));opacity:.92;z-index:0}
 #tt-jersey-name,#tt-jersey-number{position:relative;z-index:2;text-align:center;width:82%;overflow:hidden;text-overflow:ellipsis}
 #tt-jersey-name{font-size:19px;font-weight:900;line-height:1.05;white-space:nowrap;letter-spacing:0;-webkit-text-stroke:.7px var(--jersey-outline);text-shadow:0 1px 1px var(--jersey-outline)}
+#tt-jersey[data-team="kr"]{background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='230' height='268'><path d='M-10,42 C25,28 65,38 95,32 C125,26 155,14 195,30 C215,38 228,50 240,44 L240,68 C226,74 210,64 185,55 C148,41 118,54 88,60 C58,66 24,58 -10,70Z' fill='%23900018' opacity='.78'/><path d='M-10,92 C18,76 55,86 92,80 C122,74 152,62 188,76 C210,84 224,96 240,92 L240,118 C222,124 206,112 182,104 C148,90 118,104 88,110 C54,116 18,106 -10,120Z' fill='%23900018' opacity='.72'/><path d='M-10,142 C22,128 58,138 96,132 C128,126 158,116 194,130 C215,138 228,150 240,146 L240,170 C226,176 210,165 186,158 C150,145 120,158 88,164 C56,170 20,160 -10,172Z' fill='%23900018' opacity='.66'/><path d='M-10,195 C20,182 58,190 100,185 C132,180 162,170 200,184 C218,192 230,202 240,198 L240,222 C228,228 214,218 196,212 C158,198 128,210 96,216 C56,222 20,214 -10,226Z' fill='%23900018' opacity='.60'/><path d='M-10,248 C24,236 62,244 108,239 C142,234 172,226 214,240 L240,248 L240,268 L-10,268Z' fill='%23900018' opacity='.52'/><circle cx='155' cy='52' r='5' fill='%23900018' opacity='.4'/><circle cx='168' cy='63' r='3.5' fill='%23900018' opacity='.35'/><circle cx='148' cy='67' r='3' fill='%23900018' opacity='.3'/><circle cx='72' cy='58' r='4' fill='%23900018' opacity='.38'/><circle cx='82' cy='70' r='3' fill='%23900018' opacity='.32'/></svg>") center/cover,radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.1),transparent 34%),#cd2e3a}
+#tt-jersey[data-team="kr"]::before{background:#a00018}
 #tt-jersey-number{margin-top:10px;font-size:72px;font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:0;-webkit-text-stroke:1px var(--jersey-outline);text-shadow:0 1px 1px var(--jersey-outline)}
 #tt-profile-team{font-size:13px;font-weight:700;color:var(--color-text-secondary,#526052)}
 #tt-change-profile{border:0;background:transparent;color:var(--color-text-secondary,#526052);font-size:12px;cursor:pointer;text-decoration:underline}
@@ -464,7 +466,7 @@ const TEAM_FLAGS=Object.fromEntries(WORLD_CUP_GROUPS.flatMap(group=>group.teams.
 
 const TEAM_JERSEY_COLORS={
   Mexico:['#1f7a3f','#c9282d','#fff'],
-  'South Korea':['#f7f7f7','#cd2e3a','#111'],
+  'South Korea':['#cd2e3a','#111111','#ffffff'],
   Czechia:['#d7141a','#11457e','#fff'],
   'South Africa':['#007a4d','#ffb81c','#fff'],
   Canada:['#e21b2d','#fff','#fff'],
@@ -1101,6 +1103,7 @@ function applyJerseyColors(team){
   jersey.style.setProperty('--jersey-accent',colors[1]);
   jersey.style.setProperty('--jersey-text',colors[2]);
   jersey.style.setProperty('--jersey-outline',outlineForTextColor(colors[2]));
+  jersey.dataset.team=TEAM_FLAGS[team]||'';
 }
 
 function renderProfileCard(profile){
