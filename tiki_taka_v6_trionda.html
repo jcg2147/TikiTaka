@@ -304,8 +304,7 @@ const LEADERBOARD_HOOK={
         puzzle2_time_secs:_parseMMSS(puzzle2Time),
         puzzle3_time_secs:_parseMMSS(puzzle3Time),
         total_match_time_secs:_parseMMSS(totalMatchTime),
-        user_id:sUser?.id||null,
-        is_verified:sUser?!sUser.is_anonymous:false
+        user_id:sUser?.id||null
       });
       if(error){
         if(error.code==='23505') return{ok:false,error:'Score already submitted for today — one entry per player per day'};
@@ -326,11 +325,18 @@ const LEADERBOARD_HOOK={
   fetchScores:async challengeDate=>{
     if(!_supabase) return{ok:false,reason:'not_configured'};
     try{
-      let q=_supabase.from('individual_scores').select('username,team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp,is_verified').order('total_match_time_secs',{ascending:true}).order('server_timestamp',{ascending:true}).limit(LEADERBOARD_CONFIG.limit);
+      let q=_supabase.from('individual_scores').select('username,team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp,user_id').order('total_match_time_secs',{ascending:true}).order('server_timestamp',{ascending:true}).limit(LEADERBOARD_CONFIG.limit);
       if(challengeDate) q=q.eq('challenge_date',challengeDate);
       const{data,error}=await q;
       if(error) throw error;
-      return{ok:true,scores:(data||[]).map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs),is_verified:r.is_verified}))};
+      const rows=data||[];
+      const userIds=[...new Set(rows.filter(r=>r.user_id).map(r=>r.user_id))];
+      let verifiedSet=new Set();
+      if(userIds.length){
+        const{data:vp}=await _supabase.from('players').select('user_id').eq('is_verified',true).in('user_id',userIds);
+        verifiedSet=new Set((vp||[]).map(p=>p.user_id));
+      }
+      return{ok:true,scores:rows.map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs),is_verified:r.user_id?verifiedSet.has(r.user_id):false}))};
     }catch(err){return{ok:false,error:err.message};}
   },
   fetchFastestCountries:async challengeDate=>{
@@ -1580,7 +1586,7 @@ async function initAuth(){
     const fromOAuth=new URLSearchParams(location.search).has('code')||location.hash.includes('access_token');
     _supabase.auth.onAuthStateChange(async(event,session)=>{
       if(fromOAuth&&(event==='SIGNED_IN'||event==='USER_UPDATED')&&session?.user&&!session.user.is_anonymous){
-        await _supabase.from('individual_scores').update({is_verified:true}).eq('user_id',session.user.id);
+        await _supabase.from('players').update({is_verified:true}).eq('user_id',session.user.id);
         document.getElementById('tt-verify-prompt')?.classList.remove('show');
         loadLeaderboards();
       }
