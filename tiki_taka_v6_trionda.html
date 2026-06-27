@@ -48,6 +48,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-login:disabled,#tt-start:disabled,#tt-tutorial:disabled{opacity:.62;cursor:not-allowed}
 #tt-welcome-error{min-height:16px;font-size:12px;color:#c0392b}
 #tt-profile-card{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px}
+#tt-profile-card-error{font-size:12px;color:#c0392b;text-align:center;max-width:220px;line-height:1.4}
 #tt-profile-card.hidden{display:none}
 #tt-jersey{--jersey-primary:#f5c842;--jersey-accent:#1e4d13;--jersey-text:#102015;--jersey-outline:#fff;width:230px;height:268px;position:relative;background:linear-gradient(128deg,transparent 0 39%,var(--jersey-accent) 39% 62%,transparent 62% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.22),transparent 34%),linear-gradient(110deg,rgba(255,255,255,.22),transparent 42%,rgba(0,0,0,.16)),var(--jersey-primary);clip-path:polygon(30% 7%,38% 0,62% 0,70% 7%,86% 10%,100% 30%,88% 43%,78% 35%,78% 100%,22% 100%,22% 35%,12% 43%,0 30%,14% 10%);box-shadow:inset 0 -14px 0 rgba(0,0,0,.1),0 12px 22px rgba(0,0,0,.2);filter:drop-shadow(1px 0 0 rgba(0,0,0,.78)) drop-shadow(-1px 0 0 rgba(0,0,0,.78)) drop-shadow(0 1px 0 rgba(0,0,0,.78)) drop-shadow(0 -1px 0 rgba(0,0,0,.78));display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--jersey-text);text-transform:uppercase;isolation:isolate}
 #tt-jersey::before{content:'';position:absolute;top:0;left:76px;width:78px;height:40px;background:var(--jersey-accent);clip-path:polygon(0 0,100% 0,86% 32%,68% 58%,50% 76%,32% 58%,14% 32%);z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
@@ -192,6 +193,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
         </div>
         <div id="tt-profile-team">Team</div>
         <button id="tt-change-profile" type="button">Edit profile</button>
+        <div id="tt-profile-card-error" role="status" aria-live="polite"></div>
       </div>
     </section>
 
@@ -1217,11 +1219,18 @@ async function checkUsernameAvailable(username,currentUsername=''){
   return !data?.length;
 }
 
+const PROFILE_CHANGE_LIMIT=3;
+function _getProfileChangeCount(){
+  try{
+    const s=JSON.parse(localStorage.getItem(PROFILE_CHANGE_KEY)||'{}');
+    return s.date===currentChallengeDate()?s.count||0:0;
+  }catch{return 0;}
+}
 function canChangeProfileToday(){
-  return localStorage.getItem(PROFILE_CHANGE_KEY)!==currentChallengeDate();
+  return _getProfileChangeCount()<PROFILE_CHANGE_LIMIT;
 }
 function recordProfileChange(){
-  localStorage.setItem(PROFILE_CHANGE_KEY,currentChallengeDate());
+  localStorage.setItem(PROFILE_CHANGE_KEY,JSON.stringify({date:currentChallengeDate(),count:_getProfileChangeCount()+1}));
 }
 
 function renderLeaderboardMessage(message,targetId){
@@ -1585,11 +1594,13 @@ function initWelcome(){
   });
   startButton.addEventListener('click',()=>startSelectedGame('scored'));
   tutorialButton.addEventListener('click',()=>startSelectedGame('tutorial'));
+  const profileCardError=document.getElementById('tt-profile-card-error');
   changeProfileButton.addEventListener('click',()=>{
     if(!canChangeProfileToday()){
-      error.textContent="You've already edited your profile today. Come back tomorrow!";
+      profileCardError.textContent=`You've already changed your profile ${PROFILE_CHANGE_LIMIT} times today, which is the limit. Please wait until tomorrow to make further changes.`;
       return;
     }
+    profileCardError.textContent='';
     _isEditingProfile=true;
     const currentProfile=loadSavedProfile()||playerProfile;
     loginButton.textContent='Save changes';
