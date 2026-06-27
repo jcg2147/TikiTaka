@@ -236,11 +236,14 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
   <span class="tt-ball-face"></span>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-const LEADERBOARD_CONFIG = {
-  endpoint: 'https://script.google.com/a/macros/ringcentral.com/s/AKfycbwlbt8AzXWJDVlKd-aWa0HyymOshHWI9EpEha4Eh_TkCwGY28P7bWnCy64vGkno8gI4/exec',
-  limit: 5
-};
+const SUPABASE_URL = 'https://vpszfzxfbodefraikowt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_alW-N9qfzSuNERpNt8njOw_6NnzDCay';
+const LEADERBOARD_CONFIG = { limit: 5 };
+const _supabase = (typeof supabase !== 'undefined' && SUPABASE_URL && !SUPABASE_URL.startsWith('YOUR_'))
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
 const PROFILE_KEY='tt-player-profile';
 const CHALLENGE_PROGRESS_KEY='tt-daily-match-progress-v2';
@@ -248,14 +251,72 @@ const CHALLENGE_TIME_ZONE='America/New_York';
 const DAILY_PUZZLE_LIMIT=3;
 const PROGRESS_SYNC_FRESH_MS=5*60*1000;
 
-const LEADERBOARD_HOOK = {
-  registerPlayer: async entry => gasRequest('registerPlayer', entry),
-  submitScore: async entry => gasRequest('submit', entry),
-  fetchProgress: async entry => gasRequest('progress', entry),
-  fetchScores: async challengeDate => gasRequest('list', {limit:LEADERBOARD_CONFIG.limit,challengeDate}),
-  fetchFastestCountries: async challengeDate => gasRequest('countries', {limit:LEADERBOARD_CONFIG.limit,sort:'fastest',challengeDate}),
-  fetchAverageCountries: async challengeDate => gasRequest('countries', {limit:LEADERBOARD_CONFIG.limit,sort:'average',challengeDate})
+const LEADERBOARD_HOOK={
+  registerPlayer:async({username,team})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data:ex}=await _supabase.from('players').select('*').ilike('username',username).ilike('team',team).maybeSingle();
+      if(ex){
+        await _supabase.from('players').update({last_seen:new Date().toISOString()}).eq('id',ex.id);
+        return{ok:true,username:ex.username,team:ex.team,jerseyNumber:String(ex.jersey_number).padStart(2,'0')};
+      }
+      const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',team).order('jersey_number',{ascending:false}).limit(1);
+      const jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
+      await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString()});
+      return{ok:true,username,team,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  submitScore:async({username,playerName,team,country,challengeDate,date,puzzle1Time,puzzle2Time,puzzle3Time,totalMatchTime})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{error}=await _supabase.from('individual_scores').insert({
+        username:username||playerName||'Player',
+        team:team||country,
+        challenge_date:challengeDate||date,
+        puzzle1_time_secs:_parseMMSS(puzzle1Time),
+        puzzle2_time_secs:_parseMMSS(puzzle2Time),
+        puzzle3_time_secs:_parseMMSS(puzzle3Time),
+        total_match_time_secs:_parseMMSS(totalMatchTime)
+      });
+      if(error){
+        if(error.code==='23505') return{ok:false,error:'Score already submitted for today'};
+        throw error;
+      }
+      return{ok:true};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  fetchProgress:async({username,challengeDate})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data}=await _supabase.from('individual_scores').select('puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs').ilike('username',username).eq('challenge_date',challengeDate).limit(1);
+      if(!data?.length) return{ok:true,challengeDate,completedCount:0,completedPuzzleIds:[],puzzleTimes:[]};
+      const r=data[0];
+      return{ok:true,challengeDate,completedCount:3,completedPuzzleIds:['01','02','03'].map(n=>`${challengeDate}-${n}`),puzzleTimes:[r.puzzle1_time_secs,r.puzzle2_time_secs,r.puzzle3_time_secs]};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  fetchScores:async challengeDate=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      let q=_supabase.from('individual_scores').select('username,team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp').order('total_match_time_secs',{ascending:true}).order('server_timestamp',{ascending:true}).limit(LEADERBOARD_CONFIG.limit);
+      if(challengeDate) q=q.eq('challenge_date',challengeDate);
+      const{data,error}=await q;
+      if(error) throw error;
+      return{ok:true,scores:(data||[]).map(r=>({username:r.username,team:r.team,challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs)}))};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  fetchFastestCountries:async challengeDate=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    return _fetchCountryScores(challengeDate,'fastest');
+  },
+  fetchAverageCountries:async challengeDate=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    return _fetchCountryScores(challengeDate,'average');
+  }
 };
+
+function _parseMMSS(s){const p=String(s||'0:0').split(':').map(Number);return(p[0]||0)*60+(p[1]||0);}
+function _fmtSecs(s){const n=Math.max(0,Math.floor(Number(s)||0));return`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
+
 
 const G=5, TOTAL=G*G;
 let puzzle=null, path=[], dragging=false, timerInterval=null, timerSecs=0, solved=false;
@@ -995,14 +1056,7 @@ function showProfileForm(profile=null){
 }
 
 function leaderboardConfigured(){
-  try {
-    const url=new URL(LEADERBOARD_CONFIG.endpoint);
-    return url.protocol==='https:' &&
-      url.hostname==='script.google.com' &&
-      /^(\/macros\/s\/[^/]+\/exec|\/a\/macros\/[^/]+\/s\/[^/]+\/exec)$/.test(url.pathname);
-  } catch {
-    return false;
-  }
+  return !!_supabase;
 }
 
 function demoModeRequested(){
@@ -1027,41 +1081,37 @@ function startAutomatedDemo(){
   document.getElementById('tt-tutorial-note').classList.remove('hidden');
 }
 
-function gasRequest(action,params={}){
-  return new Promise((resolve,reject)=>{
-    if(!leaderboardConfigured()){
-      resolve({ok:false,reason:'not_configured'});
-      return;
-    }
-    const callbackName=`ttLeaderboard_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const url=new URL(LEADERBOARD_CONFIG.endpoint);
-    url.searchParams.set('action',action);
-    url.searchParams.set('callback',callbackName);
-    url.searchParams.set('cacheBust',Date.now().toString());
-    Object.entries(params).forEach(([key,value])=>{
-      if(value!==undefined&&value!==null) url.searchParams.set(key,String(value));
+async function _fetchCountryScores(challengeDate,sortMode){
+  try{
+    let q=_supabase.from('individual_scores').select('team,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp');
+    if(challengeDate) q=q.eq('challenge_date',challengeDate);
+    const{data,error}=await q;
+    if(error) throw error;
+    const byTeam={};
+    (data||[]).forEach(row=>{
+      if(!byTeam[row.team]) byTeam[row.team]={team:row.team,plays:0,totalTime:0,fastestGoal:Infinity,lastPlayed:''};
+      const t=byTeam[row.team];
+      t.plays+=1; t.totalTime+=row.total_match_time_secs;
+      [row.puzzle1_time_secs,row.puzzle2_time_secs,row.puzzle3_time_secs].forEach(s=>{if(s<t.fastestGoal)t.fastestGoal=s;});
+      if(!t.lastPlayed||row.server_timestamp>t.lastPlayed) t.lastPlayed=row.server_timestamp;
     });
-    const script=document.createElement('script');
-    const cleanup=()=>{
-      clearTimeout(timer);
-      delete window[callbackName];
-      script.remove();
-    };
-    const timer=setTimeout(()=>{
-      cleanup();
-      reject(new Error('Leaderboard request timed out'));
-    },10000);
-    window[callbackName]=payload=>{
-      cleanup();
-      resolve(payload);
-    };
-    script.onerror=()=>{
-      cleanup();
-      reject(new Error('Leaderboard request failed'));
-    };
-    script.src=url.toString();
-    document.body.appendChild(script);
-  });
+    const countries=Object.values(byTeam)
+      .map(t=>({
+        team:t.team,plays:t.plays,
+        fastestGoal:_fmtSecs(t.fastestGoal===Infinity?0:t.fastestGoal),
+        bestTime:_fmtSecs(t.fastestGoal===Infinity?0:t.fastestGoal),
+        averageTime:_fmtSecs(Math.round(t.totalTime/t.plays)),
+        averageMatchTime:_fmtSecs(Math.round(t.totalTime/t.plays)),
+        fastestGoalSeconds:t.fastestGoal===Infinity?0:t.fastestGoal,
+        averageTimeSeconds:Math.round(t.totalTime/t.plays),
+        lastPlayed:t.lastPlayed
+      }))
+      .sort((a,b)=>sortMode==='average'
+        ?a.averageTimeSeconds-b.averageTimeSeconds||a.fastestGoalSeconds-b.fastestGoalSeconds||b.plays-a.plays
+        :a.fastestGoalSeconds-b.fastestGoalSeconds||b.plays-a.plays)
+      .slice(0,LEADERBOARD_CONFIG.limit);
+    return{ok:true,countries};
+  }catch(err){return{ok:false,error:err.message};}
 }
 
 function renderLeaderboardMessage(message,targetId){
@@ -1138,9 +1188,9 @@ function renderCountryLeaderboard(countries,targetId,metric='bestTime'){
 
 function loadLeaderboards(){
   if(!leaderboardConfigured()){
-    renderLeaderboardMessage('Connect Google Apps Script to enable shared scores.','tt-intro-individual-list');
-    renderLeaderboardMessage('Connect Google Apps Script to enable shared scores.','tt-intro-country-fastest-list');
-    renderLeaderboardMessage('Connect Google Apps Script to enable shared scores.','tt-intro-country-average-list');
+    renderLeaderboardMessage('Connect Supabase to enable shared scores.','tt-intro-individual-list');
+    renderLeaderboardMessage('Connect Supabase to enable shared scores.','tt-intro-country-fastest-list');
+    renderLeaderboardMessage('Connect Supabase to enable shared scores.','tt-intro-country-average-list');
     return Promise.resolve();
   }
   const today=currentChallengeDate();
@@ -1378,7 +1428,7 @@ function initWelcome(){
       profile={...profile,jerseyNumber:fallbackJerseyNumberForTeam(team),needsRegistration:true};
       saveProfile(profile);
       renderProfileCard(profile);
-      error.textContent='Profile saved locally. Jersey number may update after Apps Script is redeployed.';
+      error.textContent='Profile saved locally. Jersey number may update once Supabase is connected.';
     } finally {
       loginButton.disabled=false;
       loginButton.textContent='Login';
