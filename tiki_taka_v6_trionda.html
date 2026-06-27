@@ -371,6 +371,12 @@ const LEADERBOARD_HOOK={
         last_seen:new Date().toISOString(),last_name_change:currentChallengeDate()
       }).eq('id',existing.id);
       if(upErr) throw upErr;
+      if(existing.user_id){
+        await _supabase.from('individual_scores')
+          .update({username:newUsername,team:newTeam})
+          .eq('user_id',existing.user_id)
+          .eq('challenge_date',currentChallengeDate());
+      }
       return{ok:true,username:newUsername,team:newTeam,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
     }catch(err){return{ok:false,error:err.message};}
   }
