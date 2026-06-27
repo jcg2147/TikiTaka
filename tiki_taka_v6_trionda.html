@@ -275,7 +275,14 @@ const LEADERBOARD_HOOK={
       const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',team).order('jersey_number',{ascending:false}).limit(1);
       const jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
       const{data:{user:rUser}}=await _supabase.auth.getUser();
-      await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null});
+      const{error:insErr}=await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null});
+      if(insErr){
+        if(insErr.code==='23505'&&rUser?.id){
+          const{data:existing2}=await _supabase.from('players').select('*').eq('user_id',rUser.id).maybeSingle();
+          if(existing2) return{ok:true,username:existing2.username,team:existing2.team,jerseyNumber:String(existing2.jersey_number).padStart(2,'0')};
+        }
+        throw insErr;
+      }
       return{ok:true,username,team,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
     }catch(err){return{ok:false,error:err.message};}
   },
@@ -295,7 +302,7 @@ const LEADERBOARD_HOOK={
         is_verified:sUser?!sUser.is_anonymous:false
       });
       if(error){
-        if(error.code==='23505') return{ok:false,error:'Score already submitted for today'};
+        if(error.code==='23505') return{ok:false,error:'Score already submitted for today — one entry per player per day'};
         throw error;
       }
       return{ok:true};
