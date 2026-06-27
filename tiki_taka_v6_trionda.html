@@ -22,6 +22,13 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 .tt-field label,.tt-section-kicker{font-size:12px;font-weight:700;color:var(--color-text-secondary,#526052);text-transform:uppercase}
 #tt-username{width:100%;height:38px;border-radius:6px;border:1px solid var(--color-border-secondary,#cfd8cf);background:var(--color-background-primary,#fff);color:var(--color-text-primary,#101510);font:inherit;padding:0 10px}
 #tt-username:focus{outline:2px solid #f5c842;outline-offset:1px}
+#tt-edit-context{background:var(--color-background-secondary,#f4f7f4);border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+#tt-edit-context.hidden{display:none}
+.tt-edit-notice{font-size:12px;color:#8a6a00;font-weight:600;background:#fff8d8;border:1px solid #f5c84266;border-radius:4px;padding:4px 8px}
+.tt-current-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.tt-current-label{color:var(--color-text-secondary,#526052);min-width:116px}
+.tt-current-value{font-weight:600;display:flex;align-items:center;gap:6px}
+.tt-current-value img{width:24px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
 #tt-username-status{font-size:11px;min-height:14px;display:block}
 #tt-username-status.available{color:#1a7a4a}
 #tt-username-status.taken{color:#c0392b}
@@ -149,6 +156,17 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
       <div id="tt-welcome-title">Tiki-Taka</div>
       <div id="tt-welcome-sub">Build your player profile and choose your side.</div>
       <form id="tt-start-form">
+        <div id="tt-edit-context" class="hidden">
+          <div class="tt-edit-notice">You can only edit your profile once per day.</div>
+          <div class="tt-current-row">
+            <span class="tt-current-label">Current username</span>
+            <span id="tt-current-username" class="tt-current-value"></span>
+          </div>
+          <div class="tt-current-row">
+            <span class="tt-current-label">Current country</span>
+            <span id="tt-current-team" class="tt-current-value"></span>
+          </div>
+        </div>
         <div class="tt-field">
           <label for="tt-username">Username</label>
           <input id="tt-username" name="username" type="text" maxlength="18" autocomplete="nickname" required>
@@ -1111,9 +1129,26 @@ async function refreshProfileRegistration(profile){
 function showProfileForm(profile=null){
   document.getElementById('tt-profile-card').classList.add('hidden');
   document.getElementById('tt-start-form').classList.remove('hidden');
-  document.getElementById('tt-welcome-sub').textContent='Build your player profile and choose your side.';
   const usernameInput=document.getElementById('tt-username');
   const teamInput=document.getElementById('tt-team');
+  const editCtx=document.getElementById('tt-edit-context');
+  const userLabel=document.querySelector('label[for="tt-username"]');
+  const teamLabel=document.getElementById('tt-team-label');
+  if(profile){
+    document.getElementById('tt-welcome-sub').textContent='Update your username and/or country affiliation below.';
+    userLabel.textContent='New username';
+    teamLabel.textContent='New country affiliation';
+    document.getElementById('tt-current-username').textContent=profile.username;
+    const flag=TEAM_FLAGS[profile.team]||'';
+    const teamEl=document.getElementById('tt-current-team');
+    teamEl.innerHTML=flag?`<img src="https://flagcdn.com/w40/${flag}.png" alt=""> ${profile.team}`:profile.team;
+    editCtx.classList.remove('hidden');
+  } else {
+    document.getElementById('tt-welcome-sub').textContent='Build your player profile and choose your side.';
+    userLabel.textContent='Username';
+    teamLabel.textContent='Team you represent';
+    editCtx.classList.add('hidden');
+  }
   usernameInput.value=profile?.username||'';
   teamInput.value=profile?.team||'';
   document.querySelectorAll('.tt-team-option').forEach(opt=>{
