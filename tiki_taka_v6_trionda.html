@@ -8,6 +8,13 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(--font-sans,Arial,sans-serif)}
 .tt-screen.hidden{display:none!important}
+#tt-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:repeating-linear-gradient(90deg,#1f6525 0,#1f6525 11%,#24712a 11%,#24712a 22%);user-select:none;pointer-events:auto;contain:layout paint;transform:translate3d(0,0,0);will-change:transform}
+#tt-splash::before{content:'';position:absolute;inset:34px 48px;pointer-events:none;opacity:.42;background:center/100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 720'%3E%3Cg fill='none' stroke='white' stroke-width='5'%3E%3Crect x='3' y='3' width='1194' height='714'/%3E%3Cpath d='M600 3v714'/%3E%3Ccircle cx='600' cy='360' r='86'/%3E%3Cpath d='M0 210h184v300H0M1200 210h-184v300h184M0 292h72v136H0M1200 292h-72v136h72'/%3E%3Cpath d='M145 314a86 86 0 0 1 0 92M1055 314a86 86 0 0 0 0 92'/%3E%3C/g%3E%3Cg fill='white'%3E%3Ccircle cx='600' cy='360' r='5'/%3E%3Ccircle cx='132' cy='360' r='5'/%3E%3Ccircle cx='1068' cy='360' r='5'/%3E%3C/g%3E%3C/svg%3E")}
+#tt-splash::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 36%,rgba(0,0,0,.16) 100%)}
+#tt-splash.tt-splash-exit{animation:ttSplashExit .9s cubic-bezier(.76,0,.24,1) forwards;pointer-events:none}
+#tt-splash-badge{position:relative;z-index:1;width:clamp(230px,40vmin,430px);aspect-ratio:1;transform:translateZ(0);filter:drop-shadow(0 20px 28px rgba(0,0,0,.35));will-change:transform}
+#tt-splash-badge img{display:block;width:100%;height:100%;object-fit:contain}
+@keyframes ttSplashExit{to{transform:translate3d(0,-110vh,0)}}
 #tt-intro{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:28px 16px;background:repeating-linear-gradient(90deg,#1f6525 0,#1f6525 11%,#24712a 11%,#24712a 22%);user-select:none;position:relative;overflow:hidden}
 #tt-intro::before{content:'';position:absolute;inset:34px 48px;pointer-events:none;opacity:.42;background:center/100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 720'%3E%3Cg fill='none' stroke='white' stroke-width='5'%3E%3Crect x='3' y='3' width='1194' height='714'/%3E%3Cpath d='M600 3v714'/%3E%3Ccircle cx='600' cy='360' r='86'/%3E%3Cpath d='M0 210h184v300H0M1200 210h-184v300h184M0 292h72v136H0M1200 292h-72v136h72'/%3E%3Cpath d='M145 314a86 86 0 0 1 0 92M1055 314a86 86 0 0 0 0 92'/%3E%3C/g%3E%3Cg fill='white'%3E%3Ccircle cx='600' cy='360' r='5'/%3E%3Ccircle cx='132' cy='360' r='5'/%3E%3Ccircle cx='1068' cy='360' r='5'/%3E%3C/g%3E%3C/svg%3E")}
 #tt-intro::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 36%,rgba(0,0,0,.16) 100%)}
@@ -233,6 +240,12 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 </style>
 </head>
 <body>
+
+<div id="tt-splash" aria-label="Tiki-Taka Cup">
+  <div id="tt-splash-badge">
+    <img src="assets/logos/title-badge.png" alt="Tiki-Taka Cup">
+  </div>
+</div>
 
 <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Tiki-Taka puzzle game</h2>
 
@@ -1982,6 +1995,20 @@ async function initAuth(){
   }catch(e){console.warn('Auth init failed:',e);}
 }
 
+function initSplashScreen(){
+  const splash=document.getElementById('tt-splash');
+  if(!splash) return;
+  const removeSplash=()=>{
+    if(splash.isConnected) splash.remove();
+  };
+  splash.addEventListener('animationend',removeSplash,{once:true});
+  window.setTimeout(()=>{
+    if(splash.isConnected) splash.classList.add('tt-splash-exit');
+  },1700);
+  window.setTimeout(removeSplash,3200);
+}
+
+initSplashScreen();
 initAuth().then(()=>initWelcome());
 document.getElementById('tt-rc-close').addEventListener('click',()=>{
   document.getElementById('tt-results-overlay').classList.add('hidden');
