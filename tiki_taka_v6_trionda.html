@@ -17,10 +17,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;background:rad
 #tt-splash-badge img{display:block;width:100%;height:100%;object-fit:contain}
 #tt-splash.tt-splash-exit #tt-splash-badge{animation:ttSplashExit .9s cubic-bezier(.76,0,.24,1) forwards}
 @keyframes ttSplashExit{to{transform:translate3d(0,-110vh,0)}}
-#tt-intro{min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:28px 16px;background:transparent;user-select:none;position:relative;z-index:1;overflow:hidden}
+#tt-intro{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px 16px;background:transparent;user-select:none;position:relative;z-index:1;overflow:hidden}
+#tt-dashboard-logo{display:block;width:clamp(88px,12vmin,136px);height:auto;position:relative;z-index:1;filter:drop-shadow(0 10px 14px rgba(0,0,0,.28));opacity:1;transform:none;transition:opacity .65s ease,transform .65s cubic-bezier(.22,1,.36,1)}
 #tt-dashboard{width:min(1160px,100%);display:grid;grid-template-columns:minmax(320px,390px) 1fr;gap:16px;align-items:stretch;position:relative;z-index:1;opacity:1;transform:none;transition:opacity .65s ease,transform .65s cubic-bezier(.22,1,.36,1)}
-body.tt-splash-active #tt-dashboard{opacity:0;transform:translate3d(0,10px,0);pointer-events:none}
-body.tt-splash-reveal #tt-dashboard{opacity:1;transform:translate3d(0,0,0)}
+body.tt-splash-active :is(#tt-dashboard-logo,#tt-dashboard){opacity:0;transform:translate3d(0,10px,0);pointer-events:none}
+body.tt-splash-reveal :is(#tt-dashboard-logo,#tt-dashboard){opacity:1;transform:translate3d(0,0,0)}
 #tt-profile-panel,#tt-play-panel,#tt-leaders-panel{border:1px solid rgba(30,77,19,.18);border-radius:8px;background:var(--color-background-primary,#fff);box-shadow:0 12px 26px rgba(0,0,0,.18);padding:18px}
 #tt-profile-panel{grid-row:span 2}
 #tt-welcome-title{font-size:28px;font-weight:800;color:var(--color-text-primary,#101510);line-height:1.05}
@@ -252,6 +253,7 @@ body.tt-splash-reveal #tt-dashboard{opacity:1;transform:translate3d(0,0,0)}
 <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Tiki-Taka puzzle game</h2>
 
 <div id="tt-intro" class="tt-screen">
+  <img id="tt-dashboard-logo" src="assets/logos/logo-clean.png" alt="Tiki-Taka">
   <div id="tt-dashboard">
     <section id="tt-profile-panel" aria-labelledby="tt-welcome-title">
       <div id="tt-welcome-title">Tiki-Taka</div>
