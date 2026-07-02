@@ -1,0 +1,6 @@
+repository: Tiki-Taka-Project
+scan_start_time_utc: 2026-06-26T17:47:33Z
+scan_end_time_utc: 2026-06-27T00:58:21Z
+total_elapsed_time: 7:10:48
+final_token_usage_reported_by_codex: 1259371
+token_usage_note: final value from completed Codex goal status.

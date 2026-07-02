@@ -54,7 +54,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 :is(#tt-jersey,#tt-rc-jersey)::before{content:'';position:absolute;top:0;left:76px;width:78px;height:40px;background:var(--jersey-accent);clip-path:polygon(0 0,100% 0,86% 32%,68% 58%,50% 76%,32% 58%,14% 32%);z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
 :is(#tt-jersey,#tt-rc-jersey)::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--jersey-accent) 0 16px,transparent 16px),linear-gradient(180deg,rgba(255,255,255,.18),transparent 26%,rgba(0,0,0,.08));opacity:.92;z-index:0}
 #tt-jersey-name,#tt-jersey-number{position:relative;z-index:2;text-align:center;width:82%;overflow:hidden;text-overflow:ellipsis}
-#tt-jersey-name{font-size:19px;font-weight:900;line-height:1.05;white-space:nowrap;letter-spacing:0;-webkit-text-stroke:.7px var(--jersey-outline);text-shadow:0 1px 1px var(--jersey-outline)}
+#tt-jersey-name{width:86%;font-family:Impact,Haettenschweiler,"Arial Black","Arial Narrow",Arial,sans-serif;font-size:var(--jersey-name-size,20px);font-weight:900;line-height:1.02;white-space:nowrap;letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;-webkit-text-stroke:.35px var(--jersey-outline);text-shadow:0 1px 1px rgba(0,0,0,.18),0 0 1px var(--jersey-outline)}
 :is(#tt-jersey,#tt-rc-jersey)[data-team="kr"]{background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='230' height='268'><path d='M-10,42 C25,28 65,38 95,32 C125,26 155,14 195,30 C215,38 228,50 240,44 L240,68 C226,74 210,64 185,55 C148,41 118,54 88,60 C58,66 24,58 -10,70Z' fill='%23900018' opacity='.78'/><path d='M-10,92 C18,76 55,86 92,80 C122,74 152,62 188,76 C210,84 224,96 240,92 L240,118 C222,124 206,112 182,104 C148,90 118,104 88,110 C54,116 18,106 -10,120Z' fill='%23900018' opacity='.72'/><path d='M-10,142 C22,128 58,138 96,132 C128,126 158,116 194,130 C215,138 228,150 240,146 L240,170 C226,176 210,165 186,158 C150,145 120,158 88,164 C56,170 20,160 -10,172Z' fill='%23900018' opacity='.66'/><path d='M-10,195 C20,182 58,190 100,185 C132,180 162,170 200,184 C218,192 230,202 240,198 L240,222 C228,228 214,218 196,212 C158,198 128,210 96,216 C56,222 20,214 -10,226Z' fill='%23900018' opacity='.60'/><path d='M-10,248 C24,236 62,244 108,239 C142,234 172,226 214,240 L240,248 L240,268 L-10,268Z' fill='%23900018' opacity='.52'/><circle cx='155' cy='52' r='5' fill='%23900018' opacity='.4'/><circle cx='168' cy='63' r='3.5' fill='%23900018' opacity='.35'/><circle cx='148' cy='67' r='3' fill='%23900018' opacity='.3'/><circle cx='72' cy='58' r='4' fill='%23900018' opacity='.38'/><circle cx='82' cy='70' r='3' fill='%23900018' opacity='.32'/></svg>") center/cover,radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.1),transparent 34%),#cd2e3a}
 :is(#tt-jersey,#tt-rc-jersey)[data-team="kr"]::before{background:#a00018}
 :is(#tt-jersey,#tt-rc-jersey)[data-team="us"]{background:radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.18),transparent 38%),repeating-linear-gradient(180deg,#BF0A30 0 18px,#ffffff 18px 36px);filter:drop-shadow(3px 0 0 #000) drop-shadow(-3px 0 0 #000) drop-shadow(0 3px 0 #000) drop-shadow(0 -3px 0 #000) drop-shadow(2px 2px 0 #000) drop-shadow(-2px 2px 0 #000) drop-shadow(2px -2px 0 #000) drop-shadow(-2px -2px 0 #000)}
@@ -113,7 +113,7 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-rc-jersey-wrap{width:161px;height:188px;position:relative;flex-shrink:0}
 #tt-rc-jersey{position:absolute;top:0;left:0;transform:scale(.7);transform-origin:top left}
 #tt-rc-jersey-name,#tt-rc-jersey-number{position:relative;z-index:2;text-align:center;width:82%;overflow:hidden;text-overflow:ellipsis}
-#tt-rc-jersey-name{font-size:19px;font-weight:900;line-height:1.05;white-space:nowrap;letter-spacing:0;-webkit-text-stroke:.7px var(--jersey-outline);text-shadow:0 1px 1px var(--jersey-outline)}
+#tt-rc-jersey-name{width:86%;font-family:Impact,Haettenschweiler,"Arial Black","Arial Narrow",Arial,sans-serif;font-size:var(--jersey-name-size,20px);font-weight:900;line-height:1.02;white-space:nowrap;letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;-webkit-text-stroke:.35px var(--jersey-outline);text-shadow:0 1px 1px rgba(0,0,0,.18),0 0 1px var(--jersey-outline)}
 #tt-rc-jersey-number{margin-top:10px;font-size:72px;font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:0;-webkit-text-stroke:1px var(--jersey-outline);text-shadow:0 1px 1px var(--jersey-outline)}
 #tt-rc-identity{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center}
 #tt-rc-flag{width:26px;height:18px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
@@ -143,9 +143,8 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-play-panel{align-self:start}
 #tt-play-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
 #tt-play-title{font-size:18px;font-weight:800}
-#tt-play-team{font-size:12px;font-weight:700;color:var(--color-text-secondary,#526052);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
 #tt-play-actions{display:grid;grid-template-columns:repeat(2,minmax(130px,180px));gap:8px;align-items:center}
-#tt-challenge-summary{margin-top:9px;font-size:12px;color:var(--color-text-secondary,#526052);line-height:1.35}
+#tt-challenge-summary{margin-top:9px;font-size:12px;font-weight:700;color:var(--color-text-secondary,#526052);line-height:1.35;text-align:center}
 #tt-leaders-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 #tt-leaders-title{font-size:18px;font-weight:800}
 .tt-leaders-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -203,14 +202,17 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 #tt-ball.pop{animation:ballPop .22s cubic-bezier(.2,1.8,.4,1) forwards}
 @keyframes ballPop{0%{transform:scale(0)}60%{transform:scale(1.45)}100%{transform:scale(1)}}
 #tt-controls{display:flex;gap:10px;width:340px;margin-top:10px}
-#tt-reset,#tt-new{flex:1;padding:8px;font-size:14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-primary)}
-#tt-reset:hover,#tt-new:hover{background:var(--color-background-secondary)}
-#tt-reset:disabled,#tt-new:disabled{opacity:.62;cursor:not-allowed}
+#tt-reset{flex:1;padding:8px;font-size:14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-primary)}
+#tt-reset:hover{background:var(--color-background-secondary)}
+#tt-reset:disabled{opacity:.62;cursor:not-allowed}
 #tt-status{font-size:13px;color:var(--color-text-secondary);text-align:center;min-height:18px;margin-top:6px}
 #tt-celebration{position:absolute;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;border-radius:8px;background:rgba(0,0,0,0.52)}
 #tt-celebration.show{display:flex}
 #tt-goal-text{font-size:52px;font-weight:500;color:#f5c842;letter-spacing:2px;animation:goalPop .5s cubic-bezier(.2,1.6,.4,1) both}
 #tt-goal-sub{font-size:15px;color:#fff;margin-top:8px;opacity:0;animation:fadeIn .4s .4s forwards}
+#tt-celebration-dashboard,#tt-celebration-next{margin-top:14px;height:38px;border:0;border-radius:6px;background:#f5c842;color:#4b3500;font-size:14px;font-weight:800;padding:0 16px;cursor:pointer;opacity:0;animation:fadeIn .4s .55s forwards}
+#tt-celebration-dashboard:hover,#tt-celebration-next:hover{background:#ffd85a}
+#tt-celebration-dashboard.hidden,#tt-celebration-next.hidden{display:none}
 #tt-google-gate{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px;text-align:center}
 #tt-google-gate.hidden{display:none}
 #tt-gate-sub{font-size:13px;color:var(--color-text-secondary,#526052)}
@@ -281,17 +283,13 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
 
     <section id="tt-play-panel" aria-labelledby="tt-play-title">
       <div id="tt-play-head">
-        <div>
-          <div class="tt-section-kicker">Match controls</div>
-          <div id="tt-play-title">Ready to Play</div>
-        </div>
-        <div id="tt-play-team">Login first</div>
+        <div id="tt-play-title">Match</div>
       </div>
       <div id="tt-play-actions">
         <button id="tt-start" type="button" disabled>Start Match</button>
         <button id="tt-tutorial" type="button" disabled>Tutorial</button>
       </div>
-      <div id="tt-challenge-summary">Login to see today&apos;s match status.</div>
+      <div id="tt-challenge-summary">3 new matches every day!</div>
     </section>
 
     <section id="tt-leaders-panel" aria-labelledby="tt-leaders-title">
@@ -336,11 +334,12 @@ body{background:#edf3ea;color:var(--color-text-primary,#101510);font-family:var(
     <div id="tt-celebration">
       <div id="tt-goal-text">GOAL!</div>
       <div id="tt-goal-sub">Perfect pass sequence!</div>
+      <button id="tt-celebration-next" class="hidden" type="button">Next Puzzle</button>
+      <button id="tt-celebration-dashboard" class="hidden" type="button">Return to Dashboard</button>
     </div>
   </div>
   <div id="tt-controls">
     <button id="tt-reset">Reset path</button>
-    <button id="tt-new">Next puzzle</button>
   </div>
   <div id="tt-status">Drag from <b>1</b> — cover every square in order</div>
 </div>
@@ -883,9 +882,8 @@ function updatePlayPanel(){
   startButton.disabled=!hasProfile||!state.available||state.completedCount>=state.limit;
   startButton.textContent=!state.available?'No Match Today':state.completedCount>=state.limit?'Match Complete':`Start Puzzle ${nextPuzzleNumber}/${state.limit}`;
   tutorialButton.disabled=!hasProfile;
-  playTitle.textContent=state.available?'The Match':'Match Closed';
-  document.getElementById('tt-play-team').textContent=hasProfile?playerProfile.team:'Login first';
-  challengeSummary.textContent=hasProfile?challengeAvailabilityText(state):"Login to see today's match status.";
+  playTitle.textContent=state.available?'Match':'Match Closed';
+  challengeSummary.textContent='3 new matches every day!';
 }
 
 function updateGameHeader(){
@@ -1144,6 +1142,8 @@ function triggerWin(){
           spawnConfetti();
           document.getElementById('tt-celebration').classList.add('show');
           document.getElementById('tt-goal-sub').textContent=challengeWinText(t);
+          document.getElementById('tt-celebration-dashboard').classList.toggle('hidden',gameMode!=='tutorial');
+          document.getElementById('tt-celebration-next').classList.toggle('hidden',!(gameMode==='scored'&&completedChallenge&&completedState&&completedState.completedCount<completedState.limit));
           if(_rcPromise){const p=_rcPromise;_rcPromise=null;setTimeout(async()=>{const d=await p;if(d)showResultsCard(d.scoreEntry,d.completedState,d.ranks);},2800);}
         },220);
       }
@@ -1166,7 +1166,6 @@ function spawnConfetti(){
 
 function setGameControlsDisabled(disabled){
   document.getElementById('tt-reset').disabled=disabled;
-  document.getElementById('tt-new').disabled=disabled;
 }
 
 function clearTutorialPreview(){
@@ -1205,6 +1204,18 @@ function clearSavedProfile(){
 
 function formatJerseyNumber(number){
   return String(Math.max(1,Math.floor(Number(number)||1))).padStart(2,'0');
+}
+
+function setJerseyName(elementId,username){
+  const el=document.getElementById(elementId);
+  if(!el) return;
+  const name=String(username||'Player').trim()||'Player';
+  const displayName=name.toUpperCase();
+  const length=Array.from(displayName).length;
+  const size=Math.max(13,Math.min(20,Math.round((20-(Math.max(0,length-8)*.9))*10)/10));
+  el.textContent=displayName;
+  el.title=name;
+  el.style.setProperty('--jersey-name-size',`${size}px`);
 }
 
 function fallbackJerseyNumberForTeam(team){
@@ -1246,7 +1257,7 @@ function renderProfileCard(profile){
   document.getElementById('tt-start-form').classList.add('hidden');
   document.getElementById('tt-profile-card').classList.remove('hidden');
   document.getElementById('tt-welcome-sub').textContent='Saved on this browser.';
-  document.getElementById('tt-jersey-name').textContent=profile.username;
+  setJerseyName('tt-jersey-name',profile.username);
   document.getElementById('tt-jersey-number').textContent=formatJerseyNumber(profile.jerseyNumber);
   document.getElementById('tt-profile-team').textContent=profile.team;
   applyJerseyColors(profile.team);
@@ -1502,6 +1513,8 @@ function setupPuzzle(nextPuzzle,{startClock=true,statusText=null}={}){
   solved=false; dragging=false; path=[];
   if(spinAnimId){cancelAnimationFrame(spinAnimId);spinAnimId=null;}
   document.getElementById('tt-celebration').classList.remove('show');
+  document.getElementById('tt-celebration-dashboard').classList.add('hidden');
+  document.getElementById('tt-celebration-next').classList.add('hidden');
 
   document.getElementById('tt-confetti-wrap').innerHTML='';
   document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
@@ -1591,6 +1604,8 @@ function showIntro(){
   document.getElementById('tt-root').classList.add('hidden');
   document.getElementById('tt-intro').classList.remove('hidden');
   document.getElementById('tt-celebration').classList.remove('show');
+  document.getElementById('tt-celebration-dashboard').classList.add('hidden');
+  document.getElementById('tt-celebration-next').classList.add('hidden');
 
   document.getElementById('tt-confetti-wrap').innerHTML='';
   document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
@@ -1603,9 +1618,10 @@ function showIntro(){
 }
 
 document.getElementById('tt-reset').addEventListener('click',resetPath);
-document.getElementById('tt-new').addEventListener('click',newPuzzle);
 document.getElementById('tt-dashboard-refresh').addEventListener('click',loadLeaderboards);
 document.getElementById('tt-home').addEventListener('click',showIntro);
+document.getElementById('tt-celebration-next').addEventListener('click',newPuzzle);
+document.getElementById('tt-celebration-dashboard').addEventListener('click',showIntro);
 document.addEventListener('mouseup',()=>{dragging=false;});
 document.addEventListener('touchend',()=>{dragging=false;});
 
@@ -1663,7 +1679,7 @@ function showResultsCard(scoreEntry,completedState,ranks){
   else{flagEl.style.display='none';}
 
   // Jersey
-  document.getElementById('tt-rc-jersey-name').textContent=(username||'').toUpperCase().slice(0,10);
+  setJerseyName('tt-rc-jersey-name',username);
   document.getElementById('tt-rc-jersey-number').textContent=playerProfile.jerseyNumber||'01';
   applyRcJerseyColors(team);
 
