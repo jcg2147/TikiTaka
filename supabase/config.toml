@@ -1,0 +1,2 @@
+[functions.generate-daily-challenges]
+verify_jwt = false
