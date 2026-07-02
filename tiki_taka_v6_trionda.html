@@ -2008,8 +2008,10 @@ function initSplashScreen(){
   splash.addEventListener('animationend',removeSplash,{once:true});
   window.setTimeout(()=>{
     if(splash.isConnected){
-      body.classList.add('tt-splash-reveal');
       splash.classList.add('tt-splash-exit');
+      window.setTimeout(()=>{
+        if(splash.isConnected) body.classList.add('tt-splash-reveal');
+      },500);
     }
   },1700);
   window.setTimeout(removeSplash,3200);
