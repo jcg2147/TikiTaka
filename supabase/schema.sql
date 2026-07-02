@@ -48,4 +48,13 @@ CREATE POLICY "public_insert_scores"  ON individual_scores FOR INSERT WITH CHECK
 CREATE POLICY "public_select_players" ON players           FOR SELECT USING (true);
 CREATE POLICY "public_insert_players" ON players           FOR INSERT WITH CHECK (true);
 CREATE POLICY "public_update_players" ON players           FOR UPDATE USING (true);
-CREATE POLICY "public_read_daily_challenges" ON daily_challenges FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "public_read_daily_challenges"
+  ON daily_challenges
+  FOR SELECT
+  TO anon, authenticated
+  USING (release_date = (now() AT TIME ZONE 'America/New_York')::date);
+CREATE POLICY "Allow admin to view all puzzles"
+  ON daily_challenges
+  FOR SELECT
+  TO authenticated
+  USING (auth.jwt() ->> 'email' = 'juan.carlos.1890@gmail.com');

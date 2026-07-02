@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tiki Taka Admin</title>
+  <style>
+    :root{--green:#145c2b;--line:#d8e2d6;--text:#101510;--muted:#5b665b;--gold:#f5c842;--panel:#fff}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#edf3ea;color:var(--text);font-family:Arial,"Helvetica Neue",sans-serif}
+    body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(20,92,43,.95),rgba(23,113,52,.9)),repeating-linear-gradient(90deg,transparent 0,transparent 74px,rgba(255,255,255,.08) 74px,rgba(255,255,255,.08) 76px)}
+    #admin-app{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:24px 0 36px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;color:#fff}
+    h1{margin:0;font-size:28px;line-height:1;font-weight:900}
+    #admin-meta{font-size:13px;color:rgba(255,255,255,.78);margin-top:5px}
+    #sign-out{height:36px;border:1px solid rgba(255,255,255,.35);border-radius:6px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;padding:0 12px;cursor:pointer}
+    #sign-out:hover{background:rgba(255,255,255,.2)}
+    #status{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:14px;color:var(--muted);font-size:14px}
+    #dashboard{display:grid;grid-template-columns:minmax(340px,430px) 1fr;gap:16px;align-items:start}
+    #challenge-list,#player-panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 14px 28px rgba(0,0,0,.16)}
+    #challenge-list{padding:12px;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 135px);overflow:auto}
+    .challenge-card{border:1px solid var(--line);border-radius:8px;padding:12px;background:#fbfdfb}
+    .challenge-card.active{border-color:#c9961a;box-shadow:0 0 0 2px rgba(245,200,66,.35)}
+    .challenge-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+    .challenge-date{font-size:18px;font-weight:900}
+    .challenge-meta{font-size:12px;color:var(--muted);font-weight:700}
+    .puzzle-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+    .puzzle-actions button,#reset-path{height:34px;border-radius:6px;border:1px solid #2d6a1f;background:#fff;color:#1e4d13;font-weight:800;cursor:pointer}
+    .puzzle-actions button:hover,#reset-path:hover{background:#eef7ec}
+    .puzzle-actions button.active{background:var(--gold);border-color:#c9961a;color:#4b3500}
+    #player-panel{padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;min-height:560px}
+    #active-title{align-self:stretch;font-size:20px;font-weight:900}
+    #active-subtitle{align-self:stretch;color:var(--muted);font-size:13px;margin-top:-8px}
+    #board-shell{width:min(100%,430px);display:flex;flex-direction:column;align-items:center;gap:10px}
+    #board-wrap{position:relative;width:min(100%,420px);aspect-ratio:1;background:#2d6a1f;border:3px solid #1e4d13;border-radius:8px;padding:3px}
+    #admin-canvas{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);pointer-events:none;z-index:2}
+    #admin-grid{position:relative;z-index:1;width:100%;height:100%;display:grid;gap:2px}
+    .cell{min-width:0;min-height:0;border-radius:4px;background:#3d8a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;user-select:none}
+    .cell.path{background:#5bb840}
+    .cell.path-tail{background:#6fce52}
+    .cell.defender{background:#214f1b;cursor:default}
+    .cell.defender::before{content:"";width:42%;height:42%;border-radius:50%;border:2px solid rgba(255,255,255,.88);box-shadow:inset 0 -8px 0 rgba(255,255,255,.18)}
+    .badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;position:relative;z-index:3}
+    .n1{background:#f5c842;color:#6b4800;border:2px solid #c9961a}.n2{background:#4fc3f7;color:#003f5c;border:2px solid #0288d1}.n3{background:#ef6c73;color:#5c0010;border:2px solid #c0392b}.n4{background:#81c784;color:#1b4d1e;border:2px solid #388e3c}.n5{background:#ffab91;color:#7f1d1d;border:2px solid #e64a19}.n6{background:#b2dfdb;color:#004d40;border:2px solid #00897b}
+    #play-status{min-height:20px;font-size:14px;color:var(--muted);text-align:center}
+    #reset-path{width:min(100%,180px)}
+    @media (max-width:850px){#dashboard{grid-template-columns:1fr}#challenge-list{max-height:none}header{align-items:flex-start;flex-direction:column}.puzzle-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  </style>
+</head>
+<body>
+  <main id="admin-app">
+    <header>
+      <div>
+        <h1>Tiki Taka Admin</h1>
+        <div id="admin-meta">Verifying admin session...</div>
+      </div>
+      <button id="sign-out" type="button">Sign out</button>
+    </header>
+
+    <div id="status">Loading...</div>
+
+    <section id="dashboard" hidden>
+      <div id="challenge-list" aria-label="Daily challenge list"></div>
+      <div id="player-panel">
+        <div id="active-title">Select a puzzle</div>
+        <div id="active-subtitle">Choose any date and puzzle slot to preview or play it.</div>
+        <div id="board-shell">
+          <div id="board-wrap">
+            <canvas id="admin-canvas"></canvas>
+            <div id="admin-grid"></div>
+          </div>
+          <div id="play-status">No puzzle selected.</div>
+          <button id="reset-path" type="button">Reset path</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+    const ADMIN_EMAIL='juan.carlos.1890@gmail.com';
+    const SUPABASE_URL='https://vpszfzxfbodefraikowt.supabase.co';
+    const SUPABASE_ANON_KEY='sb_publishable_alW-N9qfzSuNERpNt8njOw_6NnzDCay';
+    const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    const state={rows:[],active:null,path:[],dragging:false,solved:false};
+
+    const statusEl=document.getElementById('status');
+    const dashboardEl=document.getElementById('dashboard');
+    const listEl=document.getElementById('challenge-list');
+    const gridEl=document.getElementById('admin-grid');
+    const canvas=document.getElementById('admin-canvas');
+    const playStatus=document.getElementById('play-status');
+
+    init();
+
+    async function init(){
+      const {data:{session}}=await db.auth.getSession();
+      const email=session?.user?.email||'';
+      if(!session||email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
+        window.location.href='index.html';
+        return;
+      }
+      document.getElementById('admin-meta').textContent=`Signed in as ${email}`;
+      document.getElementById('sign-out').addEventListener('click',async()=>{await db.auth.signOut();window.location.href='index.html';});
+      await loadChallenges();
+      document.getElementById('reset-path').addEventListener('click',resetPath);
+      document.addEventListener('mouseup',()=>state.dragging=false);
+      document.addEventListener('touchend',()=>state.dragging=false);
+    }
+
+    async function loadChallenges(){
+      statusEl.textContent='Loading daily challenges...';
+      const {data,error}=await db
+        .from('daily_challenges')
+        .select('id,release_date,grid_size,player_count,numbers,defenders')
+        .order('release_date',{ascending:false});
+      if(error){
+        statusEl.textContent=`Unable to load challenges: ${error.message}`;
+        return;
+      }
+      state.rows=(data||[]).map(decodeRow).filter(Boolean);
+      dashboardEl.hidden=false;
+      statusEl.textContent=`${state.rows.length} challenge dates loaded.`;
+      renderList();
+      if(state.rows[0]) selectPuzzle(state.rows[0],0);
+    }
+
+    function decodeRow(row){
+      const gridSize=Number(row.grid_size)||5;
+      const playerCount=Number(row.player_count)||4;
+      const numbers=(row.numbers||[]).map(Number);
+      const defenders=splitDefenders(row.defenders||[],3);
+      const puzzles=[0,1,2].map(index=>({
+        rowId:row.id,
+        releaseDate:row.release_date,
+        gridSize,
+        playerCount,
+        numbers:numbers.slice(index*playerCount,(index+1)*playerCount),
+        defenders:defenders[index]||[],
+        puzzleNumber:index+1
+      })).filter(puzzle=>puzzle.numbers.length===playerCount);
+      return {...row,gridSize,playerCount,puzzles};
+    }
+
+    function splitDefenders(encoded,count){
+      const groups=[[]];
+      encoded.map(Number).forEach(cell=>{
+        if(cell===-1){if(groups.length<count)groups.push([]);return;}
+        groups[groups.length-1].push(cell);
+      });
+      while(groups.length<count) groups.push([]);
+      return groups.slice(0,count);
+    }
+
+    function renderList(){
+      listEl.innerHTML='';
+      if(!state.rows.length){
+        listEl.innerHTML='<div class="challenge-card">No puzzles found.</div>';
+        return;
+      }
+      state.rows.forEach(row=>{
+        const card=document.createElement('article');
+        card.className='challenge-card';
+        card.dataset.rowId=row.id;
+        const head=document.createElement('div');
+        head.className='challenge-head';
+        head.innerHTML=`<div><div class="challenge-date">${row.release_date}</div><div class="challenge-meta">${row.puzzles.length} puzzles</div></div><div class="challenge-meta">${row.gridSize}x${row.gridSize}<br>${row.playerCount} targets</div>`;
+        const actions=document.createElement('div');
+        actions.className='puzzle-actions';
+        row.puzzles.forEach((puzzle,index)=>{
+          const button=document.createElement('button');
+          button.type='button';
+          button.textContent=`Puzzle ${index+1}`;
+          button.addEventListener('click',()=>selectPuzzle(row,index));
+          actions.appendChild(button);
+        });
+        card.append(head,actions);
+        listEl.appendChild(card);
+      });
+    }
+
+    function selectPuzzle(row,index){
+      const puzzle=row.puzzles[index];
+      if(!puzzle) return;
+      state.active=puzzle;
+      state.path=[];
+      state.dragging=false;
+      state.solved=false;
+      document.getElementById('active-title').textContent=`${row.release_date} - Puzzle ${index+1}`;
+      document.getElementById('active-subtitle').textContent=`${puzzle.gridSize}x${puzzle.gridSize}, ${puzzle.playerCount} targets, ${puzzle.defenders.length} defenders`;
+      document.querySelectorAll('.challenge-card').forEach(card=>card.classList.toggle('active',card.dataset.rowId===String(row.id)));
+      document.querySelectorAll('.puzzle-actions button').forEach(button=>button.classList.remove('active'));
+      const activeCard=document.querySelector(`.challenge-card[data-row-id="${row.id}"]`);
+      activeCard?.querySelectorAll('.puzzle-actions button')[index]?.classList.add('active');
+      buildGrid(puzzle);
+      drawPath();
+      playStatus.textContent='Start at 1, cover every open square, and finish on the final target.';
+    }
+
+    function buildGrid(puzzle){
+      gridEl.innerHTML='';
+      gridEl.style.gridTemplateColumns=`repeat(${puzzle.gridSize},1fr)`;
+      gridEl.style.gridTemplateRows=`repeat(${puzzle.gridSize},1fr)`;
+      for(let i=0;i<puzzle.gridSize*puzzle.gridSize;i++){
+        const cell=document.createElement('div');
+        cell.className='cell';
+        cell.dataset.idx=i;
+        const targetIndex=puzzle.numbers.indexOf(i);
+        if(targetIndex>=0){
+          const badge=document.createElement('div');
+          badge.className=`badge n${targetIndex+1}`;
+          badge.textContent=targetIndex+1;
+          cell.appendChild(badge);
+        }else if(puzzle.defenders.includes(i)){
+          cell.classList.add('defender');
+        }
+        cell.addEventListener('mousedown',event=>{event.preventDefault();startPath(i);});
+        cell.addEventListener('mouseenter',()=>{if(state.dragging)extendPath(i);});
+        cell.addEventListener('touchstart',event=>{event.preventDefault();startPath(i);},{passive:false});
+        cell.addEventListener('touchmove',event=>{
+          event.preventDefault();
+          const touch=event.touches[0];
+          const el=document.elementFromPoint(touch.clientX,touch.clientY);
+          const target=el?.closest?.('.cell');
+          if(target) extendPath(Number(target.dataset.idx));
+        },{passive:false});
+        gridEl.appendChild(cell);
+      }
+      resizeCanvas();
+    }
+
+    function resetPath(){
+      state.path=[];
+      state.dragging=false;
+      state.solved=false;
+      drawPath();
+      playStatus.textContent=state.active?'Path reset.':'No puzzle selected.';
+    }
+
+    function startPath(cell){
+      const puzzle=state.active;
+      if(!puzzle||state.solved||puzzle.defenders.includes(cell)) return;
+      if(!state.path.length&&cell!==puzzle.numbers[0]){
+        playStatus.textContent='Start from target 1.';
+        return;
+      }
+      state.dragging=true;
+      if(!state.path.length) state.path=[cell];
+      else extendPath(cell);
+      drawPath();
+    }
+
+    function extendPath(cell){
+      const puzzle=state.active;
+      if(!puzzle||state.solved||puzzle.defenders.includes(cell)||!state.path.length) return;
+      const last=state.path[state.path.length-1];
+      const existing=state.path.indexOf(cell);
+      if(existing>=0){
+        state.path=state.path.slice(0,existing+1);
+        drawPath();
+        return;
+      }
+      if(!neighbors(puzzle.gridSize,last).includes(cell)) return;
+      state.path.push(cell);
+      drawPath();
+      checkWin();
+    }
+
+    function drawPath(){
+      document.querySelectorAll('.cell').forEach(cell=>{
+        const idx=Number(cell.dataset.idx);
+        cell.classList.remove('path','path-tail');
+        if(state.path.includes(idx)) cell.classList.add(idx===state.path[state.path.length-1]?'path-tail':'path');
+      });
+      resizeCanvas();
+      const ctx=canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      if(state.path.length<2||!state.active) return;
+      ctx.strokeStyle='rgba(255,255,100,.82)';
+      ctx.lineWidth=9;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.beginPath();
+      state.path.forEach((cell,index)=>{
+        const {x,y}=cellCenter(cell);
+        index===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    }
+
+    function resizeCanvas(){
+      const rect=gridEl.getBoundingClientRect();
+      canvas.width=Math.max(1,Math.round(rect.width));
+      canvas.height=Math.max(1,Math.round(rect.height));
+    }
+
+    function cellCenter(cell){
+      const el=gridEl.querySelector(`[data-idx="${cell}"]`);
+      const gridRect=gridEl.getBoundingClientRect();
+      const rect=el.getBoundingClientRect();
+      return {x:rect.left-gridRect.left+rect.width/2,y:rect.top-gridRect.top+rect.height/2};
+    }
+
+    function checkWin(){
+      const puzzle=state.active;
+      const total=puzzle.gridSize*puzzle.gridSize;
+      const freeCount=Array.from({length:total},(_,i)=>i).filter(cell=>!puzzle.defenders.includes(cell)).length;
+      if(state.path.length!==freeCount) return;
+      if(state.path[state.path.length-1]!==puzzle.numbers[puzzle.numbers.length-1]) return;
+      const positions=puzzle.numbers.map(cell=>state.path.indexOf(cell));
+      if(!positions.every((pos,index)=>pos>=0&&(index===0||positions[index-1]<pos))) return;
+      state.solved=true;
+      state.dragging=false;
+      playStatus.textContent='Solved. This admin preview does not submit a score.';
+    }
+
+    function neighbors(size,cell){
+      const row=Math.floor(cell/size);
+      const col=cell%size;
+      const out=[];
+      if(row>0) out.push((row-1)*size+col);
+      if(row<size-1) out.push((row+1)*size+col);
+      if(col>0) out.push(row*size+col-1);
+      if(col<size-1) out.push(row*size+col+1);
+      return out;
+    }
+  </script>
+</body>
+</html>

@@ -28,4 +28,11 @@ create policy "public_read_daily_challenges"
   on public.daily_challenges
   for select
   to anon, authenticated
-  using (true);
+  using (release_date = (now() at time zone 'America/New_York')::date);
+
+drop policy if exists "Allow admin to view all puzzles" on public.daily_challenges;
+create policy "Allow admin to view all puzzles"
+  on public.daily_challenges
+  for select
+  to authenticated
+  using (auth.jwt() ->> 'email' = 'juan.carlos.1890@gmail.com');
