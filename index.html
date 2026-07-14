@@ -1,12 +1,2030 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=tiki_taka_v6_trionda.html">
-  <title>Tiki-Taka</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiki Taka Cup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{min-height:100%;background:#1f6525}
+body{min-height:100vh;background:repeating-linear-gradient(90deg,#1f6525 0,#1f6525 11%,#24712a 11%,#24712a 22%);color:var(--color-text-primary,#101510);font-family:var(--font-sans,Arial,sans-serif);position:relative}
+body::before{content:'';position:fixed;inset:34px 48px;pointer-events:none;opacity:.42;background:center/100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 720'%3E%3Cg fill='none' stroke='white' stroke-width='5'%3E%3Crect x='3' y='3' width='1194' height='714'/%3E%3Cpath d='M600 3v714'/%3E%3Ccircle cx='600' cy='360' r='86'/%3E%3Cpath d='M0 210h184v300H0M1200 210h-184v300h184M0 292h72v136H0M1200 292h-72v136h72'/%3E%3Cpath d='M145 314a86 86 0 0 1 0 92M1055 314a86 86 0 0 0 0 92'/%3E%3C/g%3E%3Cg fill='white'%3E%3Ccircle cx='600' cy='360' r='5'/%3E%3Ccircle cx='132' cy='360' r='5'/%3E%3Ccircle cx='1068' cy='360' r='5'/%3E%3C/g%3E%3C/svg%3E");z-index:0}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 36%,rgba(0,0,0,.16) 100%);z-index:0}
+.tt-screen.hidden{display:none!important}
+#tt-splash{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:transparent;user-select:none;pointer-events:auto;contain:layout paint}
+#tt-splash.tt-splash-exit{pointer-events:none}
+#tt-splash-badge{position:relative;z-index:1;width:clamp(230px,40vmin,430px);aspect-ratio:1;transform:translateZ(0);filter:drop-shadow(0 20px 28px rgba(0,0,0,.35));will-change:transform}
+#tt-splash-badge img{display:block;width:100%;height:100%;object-fit:contain}
+#tt-splash.tt-splash-exit #tt-splash-badge{animation:ttSplashExit .9s cubic-bezier(.76,0,.24,1) forwards}
+@keyframes ttSplashExit{to{transform:translate3d(0,-110vh,0)}}
+#tt-intro{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px 16px;background:transparent;user-select:none;position:relative;z-index:1;overflow:hidden}
+#tt-dashboard-logo{display:block;width:clamp(88px,12vmin,136px);height:auto;position:relative;z-index:1;filter:drop-shadow(0 10px 14px rgba(0,0,0,.28));opacity:1;transform:none;transition:opacity .65s ease,transform .65s cubic-bezier(.22,1,.36,1)}
+#tt-dashboard{width:min(1160px,100%);display:grid;grid-template-columns:minmax(320px,390px) 1fr;gap:16px;align-items:stretch;position:relative;z-index:1;opacity:1;transform:none;transition:opacity .65s ease,transform .65s cubic-bezier(.22,1,.36,1)}
+body.tt-splash-active :is(#tt-dashboard-logo,#tt-dashboard){opacity:0;transform:translate3d(0,10px,0);pointer-events:none}
+body.tt-splash-reveal :is(#tt-dashboard-logo,#tt-dashboard){opacity:1;transform:translate3d(0,0,0)}
+#tt-profile-panel,#tt-play-panel,#tt-leaders-panel{border:1px solid rgba(30,77,19,.18);border-radius:8px;background:var(--color-background-primary,#fff);box-shadow:0 12px 26px rgba(0,0,0,.18);padding:18px}
+#tt-profile-panel{grid-row:span 2}
+#tt-welcome-title{font-size:28px;font-weight:800;color:var(--color-text-primary,#101510);line-height:1.05}
+#tt-welcome-sub{margin-top:5px;font-size:13px;color:var(--color-text-secondary,#526052)}
+#tt-start-form{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+#tt-start-form.hidden{display:none}
+.tt-field{display:flex;flex-direction:column;gap:6px}
+.tt-field label,.tt-section-kicker{font-size:12px;font-weight:700;color:var(--color-text-secondary,#526052);text-transform:uppercase}
+#tt-username{width:100%;height:38px;border-radius:6px;border:1px solid var(--color-border-secondary,#cfd8cf);background:var(--color-background-primary,#fff);color:var(--color-text-primary,#101510);font:inherit;padding:0 10px}
+#tt-username:focus{outline:2px solid #f5c842;outline-offset:1px}
+#tt-edit-context{background:var(--color-background-secondary,#f4f7f4);border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+#tt-edit-context.hidden{display:none}
+.tt-edit-notice{font-size:12px;color:#8a6a00;font-weight:600;background:#fff8d8;border:1px solid #f5c84266;border-radius:4px;padding:4px 8px}
+.tt-current-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.tt-current-label{color:var(--color-text-secondary,#526052);min-width:116px}
+.tt-current-value{font-weight:600;display:flex;align-items:center;gap:6px}
+.tt-current-value img{width:24px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+#tt-username-status{font-size:11px;min-height:14px;display:block}
+#tt-username-status.available{color:#1a7a4a}
+#tt-username-status.taken{color:#c0392b}
+#tt-username-status.checking{color:var(--color-text-secondary,#526052)}
+#tt-team-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;max-height:214px;overflow-y:auto;padding:2px}
+.tt-team-option{height:30px;border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;background:var(--color-background-primary,#fff);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tt-team-option:hover{background:var(--color-background-secondary,#f4f7f4)}
+.tt-team-option:focus{outline:2px solid #f5c842;outline-offset:1px}
+.tt-team-option[aria-pressed="true"]{border-color:#c9961a;box-shadow:0 0 0 2px #f5c842;background:#fff8d8}
+.tt-team-option img{display:block;width:28px;height:20px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.tt-login-row{display:grid}
+#tt-login,#tt-start,#tt-tutorial{height:40px;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer}
+#tt-login,#tt-start{border:0;background:#f5c842;color:#4b3500}
+#tt-login:hover,#tt-start:hover{background:#ffd85a}
+#tt-tutorial{border:1px solid #2d6a1f;background:#fff;color:#1e4d13}
+#tt-tutorial:hover{background:#eef7ec}
+#tt-login:disabled,#tt-start:disabled,#tt-tutorial:disabled{opacity:.62;cursor:not-allowed}
+#tt-welcome-error{min-height:16px;font-size:12px;color:#c0392b}
+#tt-profile-card{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px}
+#tt-profile-card-error{font-size:12px;color:#c0392b;text-align:center;max-width:220px;line-height:1.4}
+#tt-profile-card.hidden{display:none}
+:is(#tt-jersey,#tt-rc-jersey){--jersey-primary:#f5c842;--jersey-accent:#1e4d13;--jersey-text:#102015;--jersey-outline:#fff;width:230px;height:268px;position:relative;background:linear-gradient(128deg,transparent 0 39%,var(--jersey-accent) 39% 62%,transparent 62% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.22),transparent 34%),linear-gradient(110deg,rgba(255,255,255,.22),transparent 42%,rgba(0,0,0,.16)),var(--jersey-primary);clip-path:polygon(30% 7%,38% 0,62% 0,70% 7%,86% 10%,100% 30%,88% 43%,78% 35%,78% 100%,22% 100%,22% 35%,12% 43%,0 30%,14% 10%);box-shadow:inset 0 -14px 0 rgba(0,0,0,.1),0 12px 22px rgba(0,0,0,.2);filter:drop-shadow(3px 0 0 #000) drop-shadow(-3px 0 0 #000) drop-shadow(0 3px 0 #000) drop-shadow(0 -3px 0 #000) drop-shadow(2px 2px 0 #000) drop-shadow(-2px 2px 0 #000) drop-shadow(2px -2px 0 #000) drop-shadow(-2px -2px 0 #000);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--jersey-text);text-transform:uppercase;isolation:isolate}
+:is(#tt-jersey,#tt-rc-jersey)::before{content:'';position:absolute;top:0;left:76px;width:78px;height:40px;background:var(--jersey-accent);clip-path:polygon(0 0,100% 0,86% 32%,68% 58%,50% 76%,32% 58%,14% 32%);z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+:is(#tt-jersey,#tt-rc-jersey)::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--jersey-accent) 0 16px,transparent 16px),linear-gradient(180deg,rgba(255,255,255,.18),transparent 26%,rgba(0,0,0,.08));opacity:.92;z-index:0}
+#tt-jersey-name,#tt-jersey-number{position:relative;z-index:2;text-align:center;width:82%;overflow:hidden;text-overflow:ellipsis}
+#tt-jersey-name{width:86%;font-family:"Arial Black",Arial,"Helvetica Neue",sans-serif;font-size:var(--jersey-name-size,20px);font-weight:900;line-height:1.02;white-space:nowrap;letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:auto;-webkit-text-stroke:0;text-shadow:0 0 1.5px var(--jersey-outline),0 0 2.5px rgba(255,255,255,.72),0 1px 1px rgba(0,0,0,.22)}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="kr"]{background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='230' height='268'><path d='M-10,42 C25,28 65,38 95,32 C125,26 155,14 195,30 C215,38 228,50 240,44 L240,68 C226,74 210,64 185,55 C148,41 118,54 88,60 C58,66 24,58 -10,70Z' fill='%23900018' opacity='.78'/><path d='M-10,92 C18,76 55,86 92,80 C122,74 152,62 188,76 C210,84 224,96 240,92 L240,118 C222,124 206,112 182,104 C148,90 118,104 88,110 C54,116 18,106 -10,120Z' fill='%23900018' opacity='.72'/><path d='M-10,142 C22,128 58,138 96,132 C128,126 158,116 194,130 C215,138 228,150 240,146 L240,170 C226,176 210,165 186,158 C150,145 120,158 88,164 C56,170 20,160 -10,172Z' fill='%23900018' opacity='.66'/><path d='M-10,195 C20,182 58,190 100,185 C132,180 162,170 200,184 C218,192 230,202 240,198 L240,222 C228,228 214,218 196,212 C158,198 128,210 96,216 C56,222 20,214 -10,226Z' fill='%23900018' opacity='.60'/><path d='M-10,248 C24,236 62,244 108,239 C142,234 172,226 214,240 L240,248 L240,268 L-10,268Z' fill='%23900018' opacity='.52'/><circle cx='155' cy='52' r='5' fill='%23900018' opacity='.4'/><circle cx='168' cy='63' r='3.5' fill='%23900018' opacity='.35'/><circle cx='148' cy='67' r='3' fill='%23900018' opacity='.3'/><circle cx='72' cy='58' r='4' fill='%23900018' opacity='.38'/><circle cx='82' cy='70' r='3' fill='%23900018' opacity='.32'/></svg>") center/cover,radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.1),transparent 34%),#cd2e3a}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="kr"]::before{background:#a00018}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="us"]{background:radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.18),transparent 38%),repeating-linear-gradient(180deg,#BF0A30 0 18px,#ffffff 18px 36px);filter:drop-shadow(3px 0 0 #000) drop-shadow(-3px 0 0 #000) drop-shadow(0 3px 0 #000) drop-shadow(0 -3px 0 #000) drop-shadow(2px 2px 0 #000) drop-shadow(-2px 2px 0 #000) drop-shadow(2px -2px 0 #000) drop-shadow(-2px -2px 0 #000)}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ar"]{background:repeating-linear-gradient(90deg,#6cb4e4 0 36px,#ffffff 36px 70px),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.2),transparent 36%),#6cb4e4}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ar"]::before{background:#6cb4e4}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="za"]{background:repeating-linear-gradient(45deg,rgba(168,88,0,.38) 0 3px,transparent 3px 14px),repeating-linear-gradient(-45deg,rgba(168,88,0,.38) 0 3px,transparent 3px 14px),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.18),transparent 36%),#FFB81C}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ca"]{background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='230' height='268'><rect width='230' height='268' fill='%23D30000'/><path d='M95,0 L135,0 L128,55 L115,80 L102,55Z' fill='%23A50000' opacity='.65'/><path d='M102,55 L115,80 L95,155 L80,148Z' fill='%23A50000' opacity='.55'/><path d='M128,55 L115,80 L135,155 L150,148Z' fill='%23A50000' opacity='.55'/><path d='M22,38 L88,72 L78,98 L22,68Z' fill='%23A50000' opacity='.5'/><path d='M208,38 L142,72 L152,98 L208,68Z' fill='%23A50000' opacity='.5'/><path d='M38,100 L85,128 L72,162 L22,130Z' fill='%23A50000' opacity='.42'/><path d='M192,100 L145,128 L158,162 L208,130Z' fill='%23A50000' opacity='.42'/></svg>") center/cover,radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.08),transparent 36%),#D30000}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ca"]::before{background:#B00000}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="nl"]{background:linear-gradient(90deg,#3D0022 0 17%,#E8461A 17% 83%,#3D0022 83% 100%),radial-gradient(ellipse at 50% 35%,rgba(255,160,60,.25),transparent 50%),#E8461A}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ma"]{background:linear-gradient(90deg,#1B5E20 0 13%,#C1121F 13% 87%,#1B5E20 87% 100%),radial-gradient(ellipse at 50% 30%,rgba(255,80,0,.06),transparent 50%),#C1121F}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ma"]::before{background:#C1121F}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ec"]{background:linear-gradient(128deg,transparent 0 39%,#002D72 39% 62%,transparent 62% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.22),transparent 34%),linear-gradient(110deg,rgba(255,255,255,.22),transparent 42%,rgba(0,0,0,.16)),#FFD100}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="de"]{background:linear-gradient(160deg,#111111 0 14%,#DD0000 14% 26%,#FFCE00 26% 38%,#ffffff 38% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.2),transparent 38%),#ffffff}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="de"]::before{background:#ffffff}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="py"]{background:repeating-linear-gradient(90deg,#ffffff 0 26px,#D52B1E 26px 52px),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.15),transparent 38%),#ffffff}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="py"]::before{background:#0038A8}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="fr"]{background:repeating-linear-gradient(135deg,#002395 0 8px,#001256 8px 24px),radial-gradient(ellipse at 62% 44%,rgba(80,120,255,.08),transparent 40%),#001256}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="fr"]::before{background:#ffffff}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="se"]{background:linear-gradient(155deg,#006AA7 0 28%,#FECC00 28% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.1),transparent 38%),#FECC00}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="se"]::before{background:#006AA7}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="be"]{background:repeating-linear-gradient(45deg,rgba(60,0,0,.3) 0 3px,transparent 3px 16px),repeating-linear-gradient(-45deg,rgba(60,0,0,.3) 0 3px,transparent 3px 16px),radial-gradient(ellipse at 62% 44%,rgba(255,80,0,.06),transparent 40%),#D10A11}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="be"]::before{background:#FDDA24}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ba"]{background:linear-gradient(90deg,#1f5fbf 0 45%,#f4c430 45% 48%,#1f5fbf 48% 52%,#f4c430 52% 55%,#1f5fbf 55% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.08),transparent 38%),#1f5fbf}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ba"]::before{background:#1f5fbf}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="es"]{background:repeating-linear-gradient(180deg,rgba(255,196,0,.22) 0 1px,transparent 1px 13px),linear-gradient(90deg,#1a237e 0 22%,#c60b1e 22% 78%,#1a237e 78% 100%),#c60b1e}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="es"]::before{background:#c60b1e}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="br"]{background:linear-gradient(90deg,#009c3b 0 12%,#FFD700 12% 88%,#009c3b 88% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.12),transparent 38%),#FFD700}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="br"]::before{background:#009c3b}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="jp"]{background:linear-gradient(170deg,#ffffff 0 14%,#2B3FBF 14% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.1),transparent 38%),#2B3FBF}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="jp"]::before{background:#BC002D}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ci"]{background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='40'><ellipse cx='15' cy='12' rx='9' ry='5' fill='rgba(150,45,0,.38)'/><ellipse cx='40' cy='28' rx='7' ry='4' fill='rgba(150,45,0,.38)'/><ellipse cx='52' cy='8' rx='6' ry='4' fill='rgba(150,45,0,.35)'/><ellipse cx='28' cy='36' rx='8' ry='5' fill='rgba(150,45,0,.35)'/><ellipse cx='5' cy='32' rx='5' ry='3' fill='rgba(150,45,0,.32)'/></svg>") repeat,linear-gradient(90deg,#009e60 0 12%,#f77f00 12% 88%,#009e60 88% 100%),#f77f00}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ci"]::before{background:#f77f00}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="no"]{background:linear-gradient(90deg,transparent 0 40%,#ffffff 40% 46%,#00205b 46% 54%,#ffffff 54% 60%,transparent 60% 100%),linear-gradient(180deg,transparent 0 36%,#ffffff 36% 43%,#00205b 43% 57%,#ffffff 57% 64%,transparent 64% 100%),#BA0C2F}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="no"]::before{background:#BA0C2F}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="mx"]{background:repeating-linear-gradient(0deg,rgba(0,50,10,.2) 0 1px,transparent 1px 16px),repeating-linear-gradient(90deg,rgba(0,50,10,.2) 0 1px,transparent 1px 16px),repeating-radial-gradient(circle at 50% 42%,transparent 0 44px,rgba(0,50,10,.25) 44px 46px,transparent 46px 72px,rgba(0,50,10,.25) 72px 74px),#1f7a3f}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ch"]{background:linear-gradient(90deg,#e0001b 0 16%,#ffffff 16% 22%,#e0001b 22% 78%,#ffffff 78% 84%,#e0001b 84% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.12),transparent 38%),#e0001b}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="ch"]::before{background:#e0001b}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="au"]{background:linear-gradient(90deg,#006B3F 0 14%,#E8A000 14% 86%,#006B3F 86% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,255,255,.1),transparent 38%),#E8A000}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="au"]::before{background:#006B3F}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="eg"]{background:linear-gradient(90deg,#7a0000 0 20%,#CE1126 20% 80%,#7a0000 80% 100%),radial-gradient(ellipse at 62% 44%,rgba(255,80,0,.06),transparent 40%),#CE1126}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="eg"]::before{background:#111111}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="cv"]{background:repeating-linear-gradient(135deg,rgba(0,80,200,.22) 0 10px,transparent 10px 22px),repeating-linear-gradient(45deg,rgba(0,80,200,.18) 0 8px,transparent 8px 20px),linear-gradient(90deg,#001f5e 0 12%,#1535c0 12% 88%,#001f5e 88% 100%),#1535c0}
+:is(#tt-jersey,#tt-rc-jersey)[data-team="cv"]::before{background:#CF2027}
+#tt-jersey-number{margin-top:10px;font-family:"Arial Black",Arial,"Helvetica Neue",sans-serif;font-size:72px;font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:auto;-webkit-text-stroke:0;text-shadow:0 0 1.8px var(--jersey-outline),0 0 3px rgba(255,255,255,.78),0 1px 1px rgba(0,0,0,.24)}
+/* ── Results Card ─────────────────────────────── */
+@keyframes tt-rc-in{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}
+#tt-results-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,8,3,.92);display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto}
+#tt-results-overlay.hidden{display:none}
+#tt-results-card{width:100%;max-width:370px;background:linear-gradient(165deg,#091f14 0%,#0d3320 52%,#061710 100%);border-radius:20px;overflow:hidden;box-shadow:0 28px 72px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.07);position:relative;font-family:inherit;animation:tt-rc-in .45s cubic-bezier(.22,1,.36,1) both}
+#tt-results-card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0,transparent 44px,rgba(255,255,255,.02) 44px,rgba(255,255,255,.02) 45px);pointer-events:none;z-index:0}
+#tt-rc-header{position:relative;z-index:1;background:linear-gradient(135deg,#1c7a3d,#0f4222);border-bottom:2px solid rgba(255,215,0,.22);padding:13px 18px 11px;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+#tt-rc-logo-row{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:rgba(255,215,0,.75);letter-spacing:.18em;text-transform:uppercase}
+#tt-rc-heading{font-size:21px;font-weight:900;color:#fff;letter-spacing:.03em;line-height:1.1}
+#tt-rc-date{font-size:11px;color:rgba(255,255,255,.48);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+#tt-rc-player{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 20px 12px;background:rgba(0,0,0,.1)}
+#tt-rc-jersey-wrap{width:161px;height:188px;position:relative;flex-shrink:0}
+#tt-rc-jersey{position:absolute;top:0;left:0;transform:scale(.7);transform-origin:top left}
+#tt-rc-jersey-name,#tt-rc-jersey-number{position:relative;z-index:2;text-align:center;width:82%;overflow:hidden;text-overflow:ellipsis}
+#tt-rc-jersey-name{width:86%;font-family:"Arial Black",Arial,"Helvetica Neue",sans-serif;font-size:var(--jersey-name-size,20px);font-weight:900;line-height:1.02;white-space:nowrap;letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:auto;-webkit-text-stroke:0;text-shadow:0 0 1.5px var(--jersey-outline),0 0 2.5px rgba(255,255,255,.72),0 1px 1px rgba(0,0,0,.22)}
+#tt-rc-jersey-number{margin-top:10px;font-family:"Arial Black",Arial,"Helvetica Neue",sans-serif;font-size:72px;font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:0;-webkit-font-smoothing:antialiased;text-rendering:auto;-webkit-text-stroke:0;text-shadow:0 0 1.8px var(--jersey-outline),0 0 3px rgba(255,255,255,.78),0 1px 1px rgba(0,0,0,.24)}
+#tt-rc-identity{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center}
+#tt-rc-flag{width:26px;height:18px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+#tt-rc-player-name{font-size:16px;font-weight:800;color:#fff;letter-spacing:.02em}
+.tt-rc-dot{color:rgba(255,255,255,.28);font-weight:300}
+#tt-rc-team-name{font-size:14px;font-weight:600;color:rgba(255,255,255,.68)}
+#tt-rc-times{position:relative;z-index:1;padding:11px 20px;border-top:1px solid rgba(255,255,255,.07)}
+.tt-rc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.tt-rc-row:last-child{border-bottom:0}
+.tt-rc-row-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.42);text-transform:uppercase;letter-spacing:.07em}
+.tt-rc-row-val{font-size:15px;font-weight:700;color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.tt-rc-total{margin-top:5px;padding-top:8px;border-top:2px solid rgba(255,215,0,.26)!important;border-bottom:0!important}
+.tt-rc-total .tt-rc-row-label{font-size:13px;color:rgba(255,215,0,.72);font-weight:800}
+.tt-rc-total .tt-rc-row-val{font-size:26px;color:#FFD700;font-weight:900;letter-spacing:.06em}
+#tt-rc-ranks{position:relative;z-index:1;display:flex;border-top:1px solid rgba(255,255,255,.07)}
+.tt-rc-rank{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:13px 10px;gap:2px;text-align:center}
+.tt-rc-rank-sep{width:1px;background:rgba(255,255,255,.08);margin:12px 0}
+.tt-rc-rank-num{font-size:28px;font-weight:900;color:#FFD700;line-height:1;letter-spacing:.01em}
+.tt-rc-rank-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.42);text-transform:uppercase;letter-spacing:.1em;line-height:1.4}
+.tt-rc-rank-sub{font-size:11px;color:rgba(255,255,255,.38);font-weight:600;margin-top:1px}
+#tt-rc-footer{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 20px 16px;border-top:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.1)}
+#tt-rc-share{font-size:12px;color:rgba(255,255,255,.38);text-align:center;font-weight:600;letter-spacing:.02em}
+#tt-rc-close{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.72);font-size:13px;font-weight:700;padding:9px 24px;border-radius:9px;cursor:pointer;width:100%;letter-spacing:.05em}
+#tt-rc-close:hover{background:rgba(255,255,255,.13)}
+#tt-profile-team{font-size:13px;font-weight:700;color:var(--color-text-secondary,#526052)}
+#tt-change-profile{border:0;background:transparent;color:var(--color-text-secondary,#526052);font-size:12px;cursor:pointer;text-decoration:underline}
+#tt-play-panel{align-self:start}
+#tt-play-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+#tt-play-title{font-size:18px;font-weight:800}
+#tt-play-actions{display:grid;grid-template-columns:repeat(2,minmax(130px,180px));gap:8px;align-items:center}
+#tt-challenge-summary{margin-top:9px;font-size:12px;font-weight:700;color:var(--color-text-secondary,#526052);line-height:1.35;text-align:center}
+#tt-leaders-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+#tt-leaders-title{font-size:18px;font-weight:800}
+.tt-leaders-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tt-leader-subtitle{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--color-text-secondary,#526052);margin-bottom:7px}
+.tt-leader-list{display:flex;flex-direction:column;gap:6px;min-height:100px}
+.tt-score-row{display:grid;grid-template-columns:18px 24px 1fr 48px;align-items:center;gap:6px;font-size:12px;color:var(--color-text-primary,#101510)}
+.tt-score-rank{color:var(--color-text-secondary,#526052);font-variant-numeric:tabular-nums}
+.tt-score-row img{display:block;width:24px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.16)}
+.tt-score-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt-score-time{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.tt-score-message{font-size:12px;color:var(--color-text-secondary,#526052);line-height:1.35}
+#tt-dashboard-refresh{border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:5px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#101510);font-size:12px;padding:4px 7px;cursor:pointer}
+#tt-dashboard-refresh:hover{background:var(--color-background-secondary,#f4f7f4)}
+#tt-root{min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px 0;user-select:none;font-family:var(--font-sans);position:relative;z-index:1}
+#tt-header{display:flex;align-items:center;justify-content:space-between;width:340px;margin-bottom:10px}
+#tt-title{font-size:18px;font-weight:500;color:var(--color-text-primary,#101510)}
+#tt-game-meta{display:flex;align-items:center;gap:6px}
+#tt-home{border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:5px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#101510);font-size:12px;padding:3px 6px;cursor:pointer}
+#tt-home:hover{background:var(--color-background-secondary,#f4f7f4)}
+#tt-mode-badge{font-size:11px;font-weight:700;color:#1e4d13;background:#e6f4e3;border:1px solid #b8d9b4;border-radius:999px;padding:3px 7px}
+#tt-timer{font-size:14px;color:var(--color-text-secondary,#526052);font-variant-numeric:tabular-nums}
+#tt-tutorial-note{width:340px;margin-bottom:10px;border:1px solid #c7d8c4;border-radius:8px;background:#fff;padding:9px 10px;font-size:12px;line-height:1.35;color:var(--color-text-secondary,#526052)}
+#tt-tutorial-note.hidden{display:none}
+#tt-goal-wrap{width:340px;height:68px;display:flex;justify-content:center;align-items:flex-end;margin-bottom:8px;background:transparent;position:relative;z-index:1}
+#tt-goal{width:300px;height:58px;border-top:4px solid #fff;border-left:4px solid #fff;border-right:4px solid #fff;border-bottom:none;background:transparent;position:relative;transition:none;filter:drop-shadow(0 0 1px #1e4d13) drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+#tt-goal.shake{animation:netShake .5s ease both}
+@keyframes netShake{
+  0%  {transform:skewX(0deg) translateX(0)}
+  12% {transform:skewX(-8deg) translateX(-7px)}
+  28% {transform:skewX(7deg)  translateX(6px)}
+  44% {transform:skewX(-5deg) translateX(-5px)}
+  60% {transform:skewX(4deg)  translateX(3px)}
+  76% {transform:skewX(-2deg) translateX(-2px)}
+  90% {transform:skewX(1deg)  translateX(1px)}
+  100%{transform:skewX(0deg)  translateX(0)}
+}
+#tt-goal::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.42) 0,rgba(255,255,255,.42) 1px,transparent 1px,transparent 20px),repeating-linear-gradient(0deg,rgba(255,255,255,.42) 0,rgba(255,255,255,.42) 1px,transparent 1px,transparent 12px)}
+#tt-field-wrap{position:relative;width:340px;height:340px;z-index:0}
+#tt-canvas{position:absolute;top:0;left:0;pointer-events:none;z-index:2}
+#tt-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:2px;width:340px;height:340px;background:#2d6a1f;border-radius:8px;padding:3px;border:3px solid #1e4d13;position:relative;z-index:1}
+.tt-cell{min-width:0;min-height:0;border-radius:4px;background:#3d8a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.tt-cell.path{background:#5bb840}
+.tt-cell.path-tail{background:#6fce52}
+.tt-cell.defender{cursor:default;background:#2d6a1f}
+.tt-num-badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;pointer-events:none;position:relative;z-index:3}
+.tt-num-1{background:#f5c842;color:#6b4800;border:2px solid #c9961a}
+.tt-num-2{background:#4fc3f7;color:#003f5c;border:2px solid #0288d1}
+.tt-num-3{background:#ef6c73;color:#5c0010;border:2px solid #c0392b}
+.tt-num-4{background:#81c784;color:#1b4d1e;border:2px solid #388e3c}
+.tt-num-5{background:#ffab91;color:#7f1d1d;border:2px solid #e64a19}
+.tt-num-6{background:#b2dfdb;color:#004d40;border:2px solid #00897b}
+/* Trionda ball */
+#tt-ball{position:fixed;width:56px;height:56px;display:none;z-index:999;pointer-events:none;transform:scale(0);filter:drop-shadow(0 5px 8px rgba(0,0,0,.34))}
+#tt-ball .tt-ball-face{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;background:url('assets/trionda-ball-sprite.png') 0 0/168px 56px no-repeat;box-shadow:inset 0 0 0 1px rgba(30,25,12,.22),inset -7px -8px 12px rgba(0,0,0,.13)}
+#tt-ball[data-frame="1"] .tt-ball-face{background-position:-56px 0}
+#tt-ball[data-frame="2"] .tt-ball-face{background-position:-112px 0}
+#tt-ball.pop{animation:ballPop .22s cubic-bezier(.2,1.8,.4,1) forwards}
+@keyframes ballPop{0%{transform:scale(0)}60%{transform:scale(1.45)}100%{transform:scale(1)}}
+#tt-controls{display:flex;gap:10px;width:340px;margin-top:10px}
+#tt-reset{flex:1;padding:8px;font-size:14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-primary)}
+#tt-reset:hover{background:var(--color-background-secondary)}
+#tt-reset:disabled{opacity:.62;cursor:not-allowed}
+#tt-status{font-size:13px;color:var(--color-text-secondary);text-align:center;min-height:18px;margin-top:6px}
+#tt-celebration{position:absolute;top:0;left:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;border-radius:8px;background:rgba(0,0,0,0.52)}
+#tt-celebration.show{display:flex}
+#tt-goal-text{font-size:52px;font-weight:500;color:#f5c842;letter-spacing:2px;animation:goalPop .5s cubic-bezier(.2,1.6,.4,1) both}
+#tt-goal-sub{font-size:15px;color:#fff;margin-top:8px;opacity:0;animation:fadeIn .4s .4s forwards}
+#tt-celebration-dashboard,#tt-celebration-next{margin-top:14px;height:38px;border:0;border-radius:6px;background:#f5c842;color:#4b3500;font-size:14px;font-weight:800;padding:0 16px;cursor:pointer;opacity:0;animation:fadeIn .4s .55s forwards}
+#tt-celebration-dashboard:hover,#tt-celebration-next:hover{background:#ffd85a}
+#tt-celebration-dashboard.hidden,#tt-celebration-next.hidden{display:none}
+#tt-google-gate{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px;text-align:center}
+#tt-google-gate.hidden{display:none}
+#tt-gate-sub{font-size:13px;color:var(--color-text-secondary,#526052)}
+#tt-google-gate-btn{background:#fff;border:1px solid var(--color-border-secondary,#cfd8cf);border-radius:6px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;color:#1f1f1f;width:100%}
+#tt-google-gate-btn:hover{background:var(--color-background-secondary,#f4f7f4)}
+#tt-confetti-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;overflow:hidden;z-index:998}
+.conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:confFall linear forwards}
+@keyframes goalPop{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes fadeIn{to{opacity:1}}
+@keyframes confFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@media (max-width:760px){
+  #tt-dashboard{grid-template-columns:1fr}
+  #tt-profile-panel{grid-row:auto}
+  .tt-leaders-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
-<body>
-  <p><a href="tiki_taka_v6_trionda.html">Play Tiki-Taka</a></p>
+<body class="tt-splash-active">
+
+<div id="tt-splash" aria-label="Tiki Taka Cup">
+  <div id="tt-splash-badge">
+    <img src="assets/logos/title-badge.png" alt="Tiki Taka Cup">
+  </div>
+</div>
+
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Tiki Taka puzzle game</h2>
+
+<div id="tt-intro" class="tt-screen">
+  <img id="tt-dashboard-logo" src="assets/logos/logo-clean.png" alt="Tiki Taka Cup">
+  <div id="tt-dashboard">
+    <section id="tt-profile-panel" aria-labelledby="tt-welcome-title">
+      <div id="tt-welcome-title">Tiki Taka Cup</div>
+      <div id="tt-welcome-sub">Build your player profile and choose your side.</div>
+      <form id="tt-start-form">
+        <div id="tt-edit-context" class="hidden">
+          <div class="tt-edit-notice">You can only edit your profile 3 times per day.</div>
+          <div class="tt-current-row">
+            <span class="tt-current-label">Current username</span>
+            <span id="tt-current-username" class="tt-current-value"></span>
+          </div>
+          <div class="tt-current-row">
+            <span class="tt-current-label">Current country</span>
+            <span id="tt-current-team" class="tt-current-value"></span>
+          </div>
+        </div>
+        <div class="tt-field">
+          <label for="tt-username">Username</label>
+          <input id="tt-username" name="username" type="text" maxlength="18" autocomplete="nickname" required>
+          <span id="tt-username-status"></span>
+        </div>
+        <div class="tt-field">
+          <label id="tt-team-label">Team you represent</label>
+          <input id="tt-team" name="team" type="hidden" required>
+          <div id="tt-team-grid" role="group" aria-labelledby="tt-team-label"></div>
+        </div>
+        <div class="tt-login-row">
+          <button id="tt-login" type="submit">Login</button>
+        </div>
+        <div id="tt-welcome-error" role="status" aria-live="polite"></div>
+      </form>
+      <div id="tt-google-gate" class="hidden">
+        <p id="tt-gate-sub">Sign in to track your score on the global leaderboard.</p>
+        <button id="tt-google-gate-btn" type="button">Sign in with Google</button>
+      </div>
+      <div id="tt-profile-card" class="hidden" aria-live="polite">
+        <div id="tt-jersey" aria-label="Player jersey">
+          <div id="tt-jersey-name">Player</div>
+          <div id="tt-jersey-number">01</div>
+        </div>
+        <div id="tt-profile-team">Team</div>
+        <button id="tt-change-profile" type="button">Edit profile</button>
+        <div id="tt-profile-card-error" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="tt-play-panel" aria-labelledby="tt-play-title">
+      <div id="tt-play-head">
+        <div id="tt-play-title">Match</div>
+      </div>
+      <div id="tt-play-actions">
+        <button id="tt-start" type="button" disabled>Start Match</button>
+        <button id="tt-tutorial" type="button" disabled>Tutorial</button>
+      </div>
+      <div id="tt-challenge-summary">3 new matches every day!</div>
+    </section>
+
+    <section id="tt-leaders-panel" aria-labelledby="tt-leaders-title">
+      <div id="tt-leaders-head">
+        <div id="tt-leaders-title">Leaderboard</div>
+        <button id="tt-dashboard-refresh" type="button">Refresh</button>
+      </div>
+      <div class="tt-leaders-grid">
+        <div>
+          <div class="tt-leader-subtitle">Individual leaders</div>
+          <div id="tt-intro-individual-list" class="tt-leader-list"></div>
+        </div>
+        <div>
+          <div class="tt-leader-subtitle">Fastest Goal</div>
+          <div id="tt-intro-country-fastest-list" class="tt-leader-list"></div>
+        </div>
+        <div>
+          <div class="tt-leader-subtitle">Countries (Avg Match)</div>
+          <div id="tt-intro-country-average-list" class="tt-leader-list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="tt-root" class="tt-screen hidden">
+  <div id="tt-header">
+    <span id="tt-title">Tiki Taka Cup</span>
+    <span id="tt-game-meta">
+      <button id="tt-home" type="button">Dashboard</button>
+      <span id="tt-mode-badge">Match</span>
+      <span id="tt-timer">00:00</span>
+    </span>
+  </div>
+  <div id="tt-tutorial-note" class="hidden"><b>Tutorial:</b> Watch the quick sample run, then play the same board. Start at 1, avoid defenders in dark green squares, cover every open square once, and finish on 4. No score will be submitted for this tutorial.</div>
+  <div id="tt-goal-wrap">
+    <div id="tt-goal"></div>
+  </div>
+  <div id="tt-field-wrap">
+    <canvas id="tt-canvas" width="340" height="340"></canvas>
+    <div id="tt-grid"></div>
+    <div id="tt-celebration">
+      <div id="tt-goal-text">GOAL!</div>
+      <div id="tt-goal-sub">Perfect pass sequence!</div>
+      <button id="tt-celebration-next" class="hidden" type="button">Next Puzzle</button>
+      <button id="tt-celebration-dashboard" class="hidden" type="button">Return to Dashboard</button>
+    </div>
+  </div>
+  <div id="tt-controls">
+    <button id="tt-reset">Reset path</button>
+  </div>
+  <div id="tt-status">Drag from <b>1</b> — cover every square in order</div>
+</div>
+
+<div id="tt-confetti-wrap"></div>
+
+<div id="tt-results-overlay" class="hidden">
+  <div id="tt-results-card">
+    <div id="tt-rc-header">
+      <div id="tt-rc-logo-row"><span>⚽</span><span id="tt-rc-title-text">Tiki Taka</span></div>
+      <div id="tt-rc-heading">Daily Results</div>
+      <div id="tt-rc-date"></div>
+    </div>
+    <div id="tt-rc-player">
+      <div id="tt-rc-jersey-wrap">
+        <div id="tt-rc-jersey">
+          <div id="tt-rc-jersey-name"></div>
+          <div id="tt-rc-jersey-number"></div>
+        </div>
+      </div>
+      <div id="tt-rc-identity">
+        <img id="tt-rc-flag" src="" alt="" />
+        <span id="tt-rc-player-name"></span>
+        <span class="tt-rc-dot">·</span>
+        <span id="tt-rc-team-name"></span>
+      </div>
+    </div>
+    <div id="tt-rc-times">
+      <div class="tt-rc-row"><span class="tt-rc-row-label">Puzzle 1</span><span class="tt-rc-row-val" id="tt-rc-p1">–</span></div>
+      <div class="tt-rc-row"><span class="tt-rc-row-label">Puzzle 2</span><span class="tt-rc-row-val" id="tt-rc-p2">–</span></div>
+      <div class="tt-rc-row"><span class="tt-rc-row-label">Puzzle 3</span><span class="tt-rc-row-val" id="tt-rc-p3">–</span></div>
+      <div class="tt-rc-row tt-rc-total"><span class="tt-rc-row-label">Total Time</span><span class="tt-rc-row-val" id="tt-rc-total">–</span></div>
+    </div>
+    <div id="tt-rc-ranks">
+      <div class="tt-rc-rank">
+        <div class="tt-rc-rank-num" id="tt-rc-global-num">–</div>
+        <div class="tt-rc-rank-lbl">🌍 Global Rank</div>
+        <div class="tt-rc-rank-sub" id="tt-rc-global-sub"></div>
+      </div>
+      <div class="tt-rc-rank-sep"></div>
+      <div class="tt-rc-rank">
+        <div class="tt-rc-rank-num" id="tt-rc-country-num">–</div>
+        <div class="tt-rc-rank-lbl" id="tt-rc-country-lbl">Country Rank</div>
+        <div class="tt-rc-rank-sub" id="tt-rc-country-sub"></div>
+      </div>
+    </div>
+    <div id="tt-rc-footer">
+      <div id="tt-rc-share">📸 Screenshot &amp; share with your squad!</div>
+      <button id="tt-rc-close" type="button">Back to Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trionda sprite cropped from the local reference image supplied for this game. -->
+<div id="tt-ball" aria-hidden="true" data-frame="0">
+  <span class="tt-ball-face"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://vpszfzxfbodefraikowt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_alW-N9qfzSuNERpNt8njOw_6NnzDCay';
+const LEADERBOARD_CONFIG = { limit: 5 };
+const _supabase = (typeof supabase !== 'undefined' && SUPABASE_URL && !SUPABASE_URL.startsWith('YOUR_'))
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+const PROFILE_KEY='tt-player-profile';
+const PROFILE_CHANGE_KEY='tt-last-profile-change';
+const CHALLENGE_PROGRESS_KEY='tt-daily-match-progress-v2';
+const DAILY_PUZZLE_LIMIT=3;
+const PROGRESS_SYNC_FRESH_MS=5*60*1000;
+
+const LEADERBOARD_HOOK={
+  registerPlayer:async({username,team})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data:ex}=await _supabase.from('players').select('*').ilike('username',username).ilike('team',team).maybeSingle();
+      if(ex){
+        await _supabase.from('players').update({last_seen:new Date().toISOString()}).eq('id',ex.id);
+        return{ok:true,username:ex.username,team:ex.team,jerseyNumber:String(ex.jersey_number).padStart(2,'0')};
+      }
+      const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',team).order('jersey_number',{ascending:false}).limit(1);
+      const jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
+      const{data:{user:rUser}}=await _supabase.auth.getUser();
+      const{error:insErr}=await _supabase.from('players').insert({username,team,jersey_number:jerseyNumber,last_seen:new Date().toISOString(),user_id:rUser?.id||null});
+      if(insErr){
+        if(insErr.code==='23505'&&rUser?.id){
+          const{data:existing2}=await _supabase.from('players').select('*').eq('user_id',rUser.id).maybeSingle();
+          if(existing2) return{ok:true,username:existing2.username,team:existing2.team,jerseyNumber:String(existing2.jersey_number).padStart(2,'0')};
+        }
+        throw insErr;
+      }
+      return{ok:true,username,team,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  submitScore:async({username,playerName,team,country,challengeDate,date,puzzle1Time,puzzle2Time,puzzle3Time,totalMatchTime})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data:{user:sUser}}=await _supabase.auth.getUser();
+      const{error}=await _supabase.from('individual_scores').insert({
+        username:username||playerName||'Player',
+        team:team||country,
+        challenge_date:challengeDate||date,
+        puzzle1_time_secs:_parseMMSS(puzzle1Time),
+        puzzle2_time_secs:_parseMMSS(puzzle2Time),
+        puzzle3_time_secs:_parseMMSS(puzzle3Time),
+        total_match_time_secs:_parseMMSS(totalMatchTime),
+        user_id:sUser?.id||null
+      });
+      if(error){
+        if(error.code==='23505') return{ok:false,error:'Score already submitted for today — one entry per player per day'};
+        throw error;
+      }
+      return{ok:true};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  fetchProgress:async({username,challengeDate})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data}=await _supabase.from('individual_scores').select('puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs').ilike('username',username).eq('challenge_date',challengeDate).limit(1);
+      if(!data?.length) return{ok:true,challengeDate,completedCount:0,completedPuzzleIds:[],puzzleTimes:[]};
+      const r=data[0];
+      return{ok:true,challengeDate,completedCount:3,completedPuzzleIds:['01','02','03'].map(n=>`${challengeDate}-${n}`),puzzleTimes:[r.puzzle1_time_secs,r.puzzle2_time_secs,r.puzzle3_time_secs]};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  fetchScores:async challengeDate=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      let q=_supabase.from('individual_scores').select('challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp,user_id').order('total_match_time_secs',{ascending:true}).order('server_timestamp',{ascending:true}).limit(LEADERBOARD_CONFIG.limit);
+      if(challengeDate) q=q.eq('challenge_date',challengeDate);
+      const{data,error}=await q;
+      if(error) throw error;
+      const rows=data||[];
+      // Resolve display names from players table to prevent localStorage spoofing
+      const userIds=[...new Set(rows.filter(r=>r.user_id).map(r=>r.user_id))];
+      const playerMap={};
+      if(userIds.length){
+        const{data:pRows}=await _supabase.from('players').select('user_id,username,team').in('user_id',userIds);
+        (pRows||[]).forEach(p=>{playerMap[p.user_id]={username:p.username,team:p.team};});
+      }
+      return{ok:true,scores:rows.map(r=>({username:playerMap[r.user_id]?.username||'Unknown',team:playerMap[r.user_id]?.team||'',challengeDate:r.challenge_date,puzzle1Time:_fmtSecs(r.puzzle1_time_secs),puzzle2Time:_fmtSecs(r.puzzle2_time_secs),puzzle3Time:_fmtSecs(r.puzzle3_time_secs),totalMatchTime:_fmtSecs(r.total_match_time_secs),time:_fmtSecs(r.total_match_time_secs)}))};
+    }catch(err){return{ok:false,error:err.message};}
+  },
+  fetchFastestCountries:async challengeDate=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    return _fetchCountryScores(challengeDate,'fastest');
+  },
+  fetchAverageCountries:async challengeDate=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    return _fetchCountryScores(challengeDate,'average');
+  },
+  updateProfile:async({oldUsername,oldTeam,newUsername,newTeam})=>{
+    if(!_supabase) return{ok:false,reason:'not_configured'};
+    try{
+      const{data:{user}}=await _supabase.auth.getUser();
+      let existing=null;
+      if(user&&!user.is_anonymous){
+        const{data}=await _supabase.from('players').select('*').eq('user_id',user.id).maybeSingle();
+        existing=data;
+      }
+      if(!existing){
+        const{data}=await _supabase.from('players').select('*').ilike('username',oldUsername).ilike('team',oldTeam).maybeSingle();
+        existing=data;
+      }
+      if(!existing) return{ok:false,error:'Player not found'};
+      let jerseyNumber=existing.jersey_number;
+      if(newTeam.toLowerCase()!==existing.team.toLowerCase()){
+        const{data:top}=await _supabase.from('players').select('jersey_number').ilike('team',newTeam).order('jersey_number',{ascending:false}).limit(1);
+        jerseyNumber=(top?.length?top[0].jersey_number:0)+1;
+      }
+      const{error:upErr}=await _supabase.from('players').update({
+        username:newUsername,team:newTeam,jersey_number:jerseyNumber,
+        last_seen:new Date().toISOString(),last_name_change:currentChallengeDate()
+      }).eq('id',existing.id);
+      if(upErr) throw upErr;
+      if(existing.user_id){
+        await _supabase.from('individual_scores')
+          .update({username:newUsername,team:newTeam})
+          .eq('user_id',existing.user_id)
+          .eq('challenge_date',currentChallengeDate());
+      }
+      return{ok:true,username:newUsername,team:newTeam,jerseyNumber:String(jerseyNumber).padStart(2,'0')};
+    }catch(err){return{ok:false,error:err.message};}
+  }
+};
+
+function _parseMMSS(s){const p=String(s||'0:0').split(':').map(Number);return(p[0]||0)*60+(p[1]||0);}
+function _fmtSecs(s){const n=Math.max(0,Math.floor(Number(s)||0));return`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
+
+let G=5, TOTAL=G*G;
+let puzzle=null, path=[], dragging=false, timerInterval=null, timerSecs=0, solved=false;
+let spinAnimId=null;
+let playerProfile={username:'',team:''};
+let gameMode='scored';
+let _isEditingProfile=false;
+let _authSession=null;
+let tutorialPreviewActive=false, tutorialPreviewTimers=[];
+let activeChallenge=null;
+let currentDailyChallenge=null;
+let challengeLoadPromise=null;
+let challengeLoadError='';
+
+const TUTORIAL_SAMPLE={
+  gridSize:5,
+  playerCount:4,
+  numbers:[0,19,5,13],
+  defenders:[8,11,16],
+  solution:[0,1,2,3,4,9,14,19,24,23,22,21,20,15,10,5,6,7,12,17,18,13]
+};
+
+const WORLD_CUP_GROUPS=[
+  {label:'Group A',teams:[{name:'Mexico',flag:'mx'},{name:'South Korea',flag:'kr'},{name:'Czechia',flag:'cz'},{name:'South Africa',flag:'za'}]},
+  {label:'Group B',teams:[{name:'Canada',flag:'ca'},{name:'Switzerland',flag:'ch'},{name:'Bosnia and Herzegovina',flag:'ba'},{name:'Qatar',flag:'qa'}]},
+  {label:'Group C',teams:[{name:'Brazil',flag:'br'},{name:'Morocco',flag:'ma'},{name:'Scotland',flag:'gb-sct'},{name:'Haiti',flag:'ht'}]},
+  {label:'Group D',teams:[{name:'United States',flag:'us'},{name:'Australia',flag:'au'},{name:'Paraguay',flag:'py'},{name:'Türkiye',flag:'tr'}]},
+  {label:'Group E',teams:[{name:'Germany',flag:'de'},{name:'Ivory Coast',flag:'ci'},{name:'Ecuador',flag:'ec'},{name:'Curaçao',flag:'cw'}]},
+  {label:'Group F',teams:[{name:'Netherlands',flag:'nl'},{name:'Japan',flag:'jp'},{name:'Sweden',flag:'se'},{name:'Tunisia',flag:'tn'}]},
+  {label:'Group G',teams:[{name:'Egypt',flag:'eg'},{name:'Iran',flag:'ir'},{name:'Belgium',flag:'be'},{name:'New Zealand',flag:'nz'}]},
+  {label:'Group H',teams:[{name:'Spain',flag:'es'},{name:'Uruguay',flag:'uy'},{name:'Cabo Verde',flag:'cv'},{name:'Saudi Arabia',flag:'sa'}]},
+  {label:'Group I',teams:[{name:'France',flag:'fr'},{name:'Norway',flag:'no'},{name:'Senegal',flag:'sn'},{name:'Iraq',flag:'iq'}]},
+  {label:'Group J',teams:[{name:'Argentina',flag:'ar'},{name:'Austria',flag:'at'},{name:'Algeria',flag:'dz'},{name:'Jordan',flag:'jo'}]},
+  {label:'Group K',teams:[{name:'Portugal',flag:'pt'},{name:'Colombia',flag:'co'},{name:'DR Congo',flag:'cd'},{name:'Uzbekistan',flag:'uz'}]},
+  {label:'Group L',teams:[{name:'England',flag:'gb-eng'},{name:'Ghana',flag:'gh'},{name:'Panama',flag:'pa'},{name:'Croatia',flag:'hr'}]}
+];
+
+const TEAM_FLAGS=Object.fromEntries(WORLD_CUP_GROUPS.flatMap(group=>group.teams.map(team=>[team.name,team.flag])));
+
+const TEAM_JERSEY_COLORS={
+  Mexico:['#1f7a3f','#c9282d','#fff'],
+  'South Korea':['#cd2e3a','#111111','#ffffff'],
+  Czechia:['#d7141a','#11457e','#fff'],
+  'South Africa':['#FFB81C','#007A4D','#111111'],
+  Canada:['#D30000','#111111','#ffffff'],
+  Switzerland:['#e0001b','#fff','#fff'],
+  'Bosnia and Herzegovina':['#1f5fbf','#f4c430','#fff'],
+  Qatar:['#8a1538','#fff','#fff'],
+  Brazil:['#FFD700','#009c3b','#1a1a1a'],
+  Morocco:['#C1121F','#1B5E20','#ffffff'],
+  Scotland:['#005eb8','#fff','#fff'],
+  Haiti:['#1f5fbf','#d62828','#fff'],
+  'United States':['#ffffff','#002868','#14213d'],
+  Australia:['#E8A000','#006B3F','#1a1a1a'],
+  Paraguay:['#ffffff','#0038A8','#D52B1E'],
+  'Türkiye':['#e30a17','#fff','#fff'],
+  Germany:['#ffffff','#111111','#111111'],
+  'Ivory Coast':['#f77f00','#009e60','#fff'],
+  Ecuador:['#FFD100','#002D72','#14213d'],
+  'Curaçao':['#1f6fd1','#ffd100','#fff'],
+  Netherlands:['#E8461A','#3D0022','#ffffff'],
+  Japan:['#2B3FBF','#BC002D','#ffffff'],
+  Sweden:['#FECC00','#006AA7','#1a1a1a'],
+  Tunisia:['#e70013','#fff','#fff'],
+  Egypt:['#ce1126','#111','#fff'],
+  Iran:['#239f40','#da0000','#fff'],
+  Belgium:['#D10A11','#FDDA24','#111111'],
+  'New Zealand':['#00247d','#cc142b','#fff'],
+  Spain:['#c60b1e','#1a237e','#ffc400'],
+  Uruguay:['#75aadb','#fff','#102a43'],
+  'Cabo Verde':['#1535c0','#CF2027','#ffffff'],
+  'Saudi Arabia':['#006c35','#fff','#fff'],
+  France:['#1f4a8a','#ef3340','#fff'],
+  Norway:['#ba0c2f','#00205b','#fff'],
+  Senegal:['#00853f','#fdef42','#fff'],
+  Iraq:['#ce1126','#007a3d','#fff'],
+  Argentina:['#6cb4e4','#6cb4e4','#1a1a4e'],
+  Austria:['#ed2939','#fff','#fff'],
+  Algeria:['#006233','#d21034','#fff'],
+  Jordan:['#111','#ce1126','#fff'],
+  Portugal:['#d00000','#006600','#fff'],
+  Colombia:['#fcd116','#003893','#102015'],
+  'DR Congo':['#007fff','#f7d618','#fff'],
+  Uzbekistan:['#1eb7d7','#009b3a','#fff'],
+  England:['#f7f7f7','#cf142b','#1f2937'],
+  Ghana:['#fcd116','#006b3f','#111'],
+  Panama:['#fff','#005293','#1f2937'],
+  Croatia:['#fff','#d7141a','#1f2937']
+};
+
+const idx=(r,c)=>r*G+c;
+const rc=i=>({r:Math.floor(i/G),c:i%G});
+function neighbors(i){
+  const {r,c}=rc(i),n=[];
+  if(r>0)   n.push(idx(r-1,c));
+  if(r<G-1) n.push(idx(r+1,c));
+  if(c>0)   n.push(idx(r,c-1));
+  if(c<G-1) n.push(idx(r,c+1));
+  return n;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function allReachable(defenders){
+  const def=new Set(defenders),free=[];
+  for(let i=0;i<TOTAL;i++) if(!def.has(i)) free.push(i);
+  if(!free.length) return true;
+  const vis=new Set([free[0]]),q=[free[0]];
+  while(q.length){const cur=q.shift();for(const nb of neighbors(cur)) if(!def.has(nb)&&!vis.has(nb)){vis.add(nb);q.push(nb);}}
+  return vis.size===free.length;
+}
+
+function hasSolution(numbers,defenders){
+  const def=new Set(defenders),free=[];
+  for(let i=0;i<TOTAL;i++) if(!def.has(i)) free.push(i);
+  const N=free.length; if(!N) return false;
+  const freeSet=new Set(free),freeIdx=new Map();
+  free.forEach((c,i)=>freeIdx.set(c,i));
+  const adj=free.map(c=>neighbors(c).filter(nb=>freeSet.has(nb)));
+  function dfs(arr,vis){
+    if(arr.length===N){
+      if(arr[arr.length-1]!==numbers[numbers.length-1]) return false;
+      const pos=numbers.map(n=>arr.indexOf(n));
+      return pos.every((p,i)=>p>=0&&(i===0||pos[i-1]<p));
+    }
+    const cur=arr[arr.length-1];
+    for(const nb of adj[freeIdx.get(cur)]){
+      if(vis.has(nb)) continue;
+      vis.add(nb);arr.push(nb);
+      if(dfs(arr,vis)) return true;
+      arr.pop();vis.delete(nb);
+    }
+    return false;
+  }
+  return dfs([numbers[0]],new Set([numbers[0]]));
+}
+
+function generatePuzzle(maxA=300,playerCount=4){
+  for(let a=0;a<maxA;a++){
+    const all=shuffle(Array.from({length:TOTAL},(_,i)=>i));
+    const numbers=all.slice(0,playerCount),defCount=3+Math.floor(Math.random()*2),defenders=all.slice(playerCount,playerCount+defCount);
+    if(allReachable(defenders)&&hasSolution(numbers,defenders)) return {numbers,defenders};
+  }
+  return {numbers:[0,6,18,24],defenders:[8,12,16]};
+}
+
+function currentChallengeDate(now=new Date()){
+  const year=now.getFullYear();
+  const month=String(now.getMonth()+1).padStart(2,'0');
+  const day=String(now.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
+}
+
+function applyBoardLayout(size=5){
+  G=Math.max(5,Math.min(6,Number(size)||5));
+  TOTAL=G*G;
+  const grid=document.getElementById('tt-grid');
+  const canvas=document.getElementById('tt-canvas');
+  if(grid){
+    grid.style.gridTemplateColumns=`repeat(${G}, 1fr)`;
+    grid.style.gridTemplateRows=`repeat(${G}, 1fr)`;
+  }
+  if(canvas){
+    canvas.width=340;
+    canvas.height=340;
+  }
+}
+
+function splitDefenders(encoded,count){
+  const groups=[[]];
+  (Array.isArray(encoded)?encoded:[]).forEach(value=>{
+    const cell=Number(value);
+    if(cell===-1){
+      if(groups.length<count) groups.push([]);
+      return;
+    }
+    groups[groups.length-1].push(cell);
+  });
+  while(groups.length<count) groups.push([]);
+  return groups.slice(0,count);
+}
+
+function decodeChallengeRows(rows,date=currentChallengeDate()){
+  if(!Array.isArray(rows)||!rows.length) return null;
+  const first=rows[0];
+  const gridSize=Math.max(5,Math.min(6,Number(first.grid_size)||5));
+  const playerCount=Math.max(4,Math.min(6,Number(first.player_count)||4));
+  let puzzles=[];
+  if(rows.length>=DAILY_PUZZLE_LIMIT&&rows.every(row=>Array.isArray(row.numbers)&&row.numbers.length===playerCount)){
+    puzzles=rows.slice(0,DAILY_PUZZLE_LIMIT).map(row=>({
+      gridSize,
+      playerCount,
+      numbers:row.numbers.map(Number),
+      defenders:(row.defenders||[]).map(Number)
+    }));
+  } else {
+    const numbers=(first.numbers||[]).map(Number);
+    const defenderGroups=splitDefenders(first.defenders||[],DAILY_PUZZLE_LIMIT);
+    for(let i=0;i<DAILY_PUZZLE_LIMIT;i++){
+      puzzles.push({
+        gridSize,
+        playerCount,
+        numbers:numbers.slice(i*playerCount,(i+1)*playerCount),
+        defenders:defenderGroups[i]||[]
+      });
+    }
+  }
+  puzzles=puzzles.filter(puz=>puz.numbers.length===playerCount&&puz.numbers.every(cell=>cell>=0&&cell<gridSize*gridSize));
+  if(!puzzles.length) return null;
+  return {date,gridSize,playerCount,puzzles:puzzles.slice(0,DAILY_PUZZLE_LIMIT)};
+}
+
+async function fetchTodayPuzzles({force=false}={}){
+  const date=currentChallengeDate();
+  if(!force&&currentDailyChallenge?.date===date) return currentDailyChallenge;
+  if(!force&&challengeLoadPromise) return challengeLoadPromise;
+  if(!_supabase){
+    challengeLoadError='Supabase is not configured.';
+    currentDailyChallenge=null;
+    updatePlayPanel();
+    return null;
+  }
+  challengeLoadError='';
+  challengeLoadPromise=_supabase
+    .from('daily_challenges')
+    .select('id,release_date,grid_size,player_count,numbers,defenders')
+    .eq('release_date',date)
+    .order('id',{ascending:true})
+    .then(({data,error})=>{
+      if(error) throw error;
+      currentDailyChallenge=decodeChallengeRows(data||[],date);
+      if(!currentDailyChallenge) challengeLoadError='No match puzzles are scheduled for today.';
+      updatePlayPanel();
+      return currentDailyChallenge;
+    })
+    .catch(err=>{
+      challengeLoadError=err?.message||'Unable to load today\'s puzzles.';
+      currentDailyChallenge=null;
+      updatePlayPanel();
+      return null;
+    })
+    .finally(()=>{challengeLoadPromise=null;});
+  return challengeLoadPromise;
+}
+
+function challengePuzzleId(date,index){
+  return `${date}-${String(index+1).padStart(2,'0')}`;
+}
+
+function challengeProfileKey(profile=playerProfile){
+  return String(profile?.username||'player')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-|-$/g,'')||'player';
+}
+
+function readChallengeProgress(){
+  try {
+    return JSON.parse(localStorage.getItem(CHALLENGE_PROGRESS_KEY)||'{}')||{};
+  } catch {
+    return {};
+  }
+}
+
+function writeChallengeProgress(progress){
+  try { localStorage.setItem(CHALLENGE_PROGRESS_KEY,JSON.stringify(progress)); } catch {}
+}
+
+function getChallengeProgressEntry(date=currentChallengeDate(),profile=playerProfile){
+  const progress=readChallengeProgress();
+  const profileKey=challengeProfileKey(profile);
+  return progress?.[date]?.[profileKey]||{};
+}
+
+function isChallengeProgressFresh(profile=playerProfile,date=currentChallengeDate()){
+  if(!leaderboardConfigured()) return true;
+  const entry=getChallengeProgressEntry(date,profile);
+  const syncedAt=Date.parse(entry.serverSyncedAt||'');
+  return Number.isFinite(syncedAt)&&Date.now()-syncedAt<PROGRESS_SYNC_FRESH_MS;
+}
+
+function getChallengeState(profile=playerProfile){
+  const date=currentChallengeDate();
+  const challenge=currentDailyChallenge?.date===date?currentDailyChallenge:null;
+  const puzzles=(challenge?.puzzles||[]).slice(0,DAILY_PUZZLE_LIMIT);
+  const entry=getChallengeProgressEntry(date,profile);
+  const validIds=new Set(puzzles.map((_,i)=>challengePuzzleId(date,i)));
+  const completedPuzzleIds=(Array.isArray(entry.completedPuzzleIds)?entry.completedPuzzleIds:[])
+    .filter(id=>validIds.has(id));
+  const puzzleTimes=(Array.isArray(entry.puzzleTimes)?entry.puzzleTimes:[])
+    .slice(0,DAILY_PUZZLE_LIMIT)
+    .map(time=>Number(time)||0);
+  while(puzzleTimes.length<DAILY_PUZZLE_LIMIT) puzzleTimes.push(0);
+  return {
+    date,
+    gridSize:challenge?.gridSize||5,
+    playerCount:challenge?.playerCount||4,
+    puzzles,
+    available:puzzles.length>0,
+    completedPuzzleIds,
+    completedCount:completedPuzzleIds.length,
+    limit:Math.min(DAILY_PUZZLE_LIMIT,puzzles.length),
+    puzzleTimes,
+    serverSyncedAt:entry.serverSyncedAt||''
+  };
+}
+
+function recordChallengeCompletion(challenge=activeChallenge,timeSeconds=timerSecs){
+  if(!challenge) return getChallengeState();
+  const progress=readChallengeProgress();
+  const profileKey=challengeProfileKey(playerProfile);
+  progress[challenge.date]=progress[challenge.date]||{};
+  const entry=progress[challenge.date][profileKey]||{completedPuzzleIds:[],puzzleTimes:[]};
+  const ids=Array.isArray(entry.completedPuzzleIds)?entry.completedPuzzleIds:[];
+  const puzzleTimes=(Array.isArray(entry.puzzleTimes)?entry.puzzleTimes:[]).slice(0,DAILY_PUZZLE_LIMIT);
+  while(puzzleTimes.length<DAILY_PUZZLE_LIMIT) puzzleTimes.push(0);
+  if(!ids.includes(challenge.puzzleId)) ids.push(challenge.puzzleId);
+  puzzleTimes[challenge.puzzleNumber-1]=Math.max(0,Math.floor(Number(timeSeconds)||0));
+  progress[challenge.date][profileKey]={completedPuzzleIds:ids,puzzleTimes,updatedAt:new Date().toISOString(),serverSyncedAt:entry.serverSyncedAt||''};
+  writeChallengeProgress(progress);
+  return getChallengeState();
+}
+
+function mergeChallengeProgress(date,completedPuzzleIds,profile=playerProfile,{serverSynced=false,puzzleTimes=null}={}){
+  const puzzles=(currentDailyChallenge?.date===date?currentDailyChallenge.puzzles:[]).slice(0,DAILY_PUZZLE_LIMIT);
+  if(!puzzles.length) return getChallengeState(profile);
+  const validIds=new Set(puzzles.map((_,i)=>challengePuzzleId(date,i)));
+  const progress=readChallengeProgress();
+  const profileKey=challengeProfileKey(profile);
+  progress[date]=progress[date]||{};
+  const entry=progress[date][profileKey]||{completedPuzzleIds:[],puzzleTimes:[]};
+  const ids=new Set(Array.isArray(entry.completedPuzzleIds)?entry.completedPuzzleIds:[]);
+  (Array.isArray(completedPuzzleIds)?completedPuzzleIds:[]).forEach(id=>{
+    if(validIds.has(id)) ids.add(id);
+  });
+  const mergedTimes=(Array.isArray(entry.puzzleTimes)?entry.puzzleTimes:[]).slice(0,DAILY_PUZZLE_LIMIT);
+  while(mergedTimes.length<DAILY_PUZZLE_LIMIT) mergedTimes.push(0);
+  if(Array.isArray(puzzleTimes)){
+    puzzleTimes.slice(0,DAILY_PUZZLE_LIMIT).forEach((time,i)=>{
+      const parsed=Number(time)||0;
+      if(parsed>0) mergedTimes[i]=parsed;
+    });
+  }
+  const now=new Date().toISOString();
+  progress[date][profileKey]={
+    completedPuzzleIds:[...ids].filter(id=>validIds.has(id)),
+    puzzleTimes:mergedTimes,
+    updatedAt:now,
+    serverSyncedAt:serverSynced?now:(entry.serverSyncedAt||'')
+  };
+  writeChallengeProgress(progress);
+  return getChallengeState(profile);
+}
+
+async function syncChallengeProgressFromServer(profile=playerProfile){
+  const date=currentChallengeDate();
+  if(!profile?.username||!currentDailyChallenge?.puzzles?.length||!leaderboardConfigured()) return getChallengeState(profile);
+  try {
+    const result=await LEADERBOARD_HOOK.fetchProgress({username:profile.username,challengeDate:date});
+    if(result?.ok){
+      const state=mergeChallengeProgress(date,result.completedPuzzleIds||[],profile,{serverSynced:true,puzzleTimes:result.puzzleTimes||null});
+      updatePlayPanel();
+      return state;
+    }
+  } catch {}
+  return getChallengeState(profile);
+}
+
+function cloneChallengePuzzle(puz,date,index){
+  return {
+    numbers:[...puz.numbers],
+    defenders:[...puz.defenders],
+    gridSize:puz.gridSize||currentDailyChallenge?.gridSize||5,
+    playerCount:puz.playerCount||currentDailyChallenge?.playerCount||4,
+    date,
+    challengeDate:date,
+    puzzleNumber:index+1,
+    puzzleId:challengePuzzleId(date,index)
+  };
+}
+
+function completedChallengeIds(date){
+  return Array.from({length:DAILY_PUZZLE_LIMIT},(_,i)=>challengePuzzleId(date,i));
+}
+
+function totalMatchSeconds(puzzleTimes){
+  return puzzleTimes.slice(0,DAILY_PUZZLE_LIMIT).reduce((sum,time)=>sum+(Number(time)||0),0);
+}
+
+function buildMatchScoreEntry(challenge=activeChallenge,state=getChallengeState()){
+  const puzzleTimes=state.puzzleTimes.slice(0,DAILY_PUZZLE_LIMIT);
+  return {
+    username:playerProfile.username,
+    playerName:playerProfile.username,
+    team:playerProfile.team,
+    country:playerProfile.team,
+    challengeDate:challenge?.challengeDate||state.date,
+    date:challenge?.challengeDate||state.date,
+    puzzle1Time:fmtTime(puzzleTimes[0]),
+    puzzle2Time:fmtTime(puzzleTimes[1]),
+    puzzle3Time:fmtTime(puzzleTimes[2]),
+    totalMatchTime:fmtTime(totalMatchSeconds(puzzleTimes))
+  };
+}
+
+function challengeAvailabilityText(state=getChallengeState()){
+  if(!state.available) return 'No match puzzles are scheduled for today.';
+  if(state.completedCount>=state.limit) return `${state.date}: ${state.limit}/${state.limit} puzzles complete. Come back tomorrow.`;
+  return `${state.date}: ${state.completedCount}/${state.limit} puzzles complete.`;
+}
+
+function updatePlayPanel(){
+  const hasProfile=Boolean(playerProfile.username&&playerProfile.team);
+  const state=getChallengeState();
+  const startButton=document.getElementById('tt-start');
+  const tutorialButton=document.getElementById('tt-tutorial');
+  const playTitle=document.getElementById('tt-play-title');
+  const challengeSummary=document.getElementById('tt-challenge-summary');
+  const nextPuzzleNumber=Math.min(state.completedCount+1,state.limit);
+  startButton.disabled=!hasProfile||!state.available||state.completedCount>=state.limit;
+  startButton.textContent=!state.available?'No Match Today':state.completedCount>=state.limit?'Match Complete':`Start Puzzle ${nextPuzzleNumber}/${state.limit}`;
+  tutorialButton.disabled=!hasProfile;
+  playTitle.textContent=state.available?'Match':'Match Closed';
+  challengeSummary.textContent='3 new matches every day!';
+}
+
+function updateGameHeader(){
+  const badge=document.getElementById('tt-mode-badge');
+  if(gameMode==='tutorial'){
+    badge.textContent='Tutorial';
+    return;
+  }
+  badge.textContent=activeChallenge?`Puzzle ${activeChallenge.puzzleNumber}/${DAILY_PUZZLE_LIMIT}`:'Match';
+}
+
+function startNextChallengePuzzle(){
+  clearTutorialPreview();
+  const state=getChallengeState();
+  if(!state.available){
+    activeChallenge=null;
+    updatePlayPanel();
+    setStatus('No match puzzles are scheduled for today.');
+    return false;
+  }
+  if(state.completedCount>=state.limit){
+    activeChallenge=null;
+    updatePlayPanel();
+    setStatus('Match complete. Come back tomorrow.');
+    return false;
+  }
+  const index=state.completedCount;
+  activeChallenge=cloneChallengePuzzle(state.puzzles[index],state.date,index);
+  setupPuzzle(activeChallenge,{
+    startClock:true,
+    statusText:`Puzzle ${activeChallenge.puzzleNumber} of ${state.limit} — cover every square in order`
+  });
+  updateGameHeader();
+  updatePlayPanel();
+  return true;
+}
+
+function challengeWinText(timeText){
+  if(gameMode==='tutorial') return `Tutorial solved in ${timeText} — no score submitted.`;
+  const state=getChallengeState();
+  if(!activeChallenge) return `Solved in ${timeText} — all squares covered!`;
+  if(state.completedCount>=state.limit) return `Match complete in ${fmtTime(totalMatchSeconds(state.puzzleTimes))}.`;
+  return `Puzzle ${activeChallenge.puzzleNumber}/${state.limit} solved in ${timeText}.`;
+}
+
+function cellCenter(i){
+  const cell=document.querySelectorAll('.tt-cell')[i];
+  const r=cell.getBoundingClientRect();
+  return {x:r.left+r.width/2, y:r.top+r.height/2};
+}
+function cellCenterCanvas(i){
+  const {r,c}=rc(i);
+  const fieldSize=340, edge=6, gap=2;
+  const cellSize=(fieldSize-edge*2-gap*(G-1))/G;
+  return {
+    x:edge+c*(cellSize+gap)+cellSize/2,
+    y:edge+r*(cellSize+gap)+cellSize/2
+  };
+}
+
+function buildGrid(puz){
+  const grid=document.getElementById('tt-grid');
+  grid.innerHTML='';
+  for(let i=0;i<TOTAL;i++){
+    const cell=document.createElement('div');
+    cell.className='tt-cell'; cell.dataset.idx=i;
+    const ni=puz.numbers.indexOf(i);
+    if(ni>=0){
+      const badge=document.createElement('div');
+      badge.className=`tt-num-badge tt-num-${ni+1}`;
+      badge.textContent=ni+1;
+      cell.appendChild(badge);
+    } else if(puz.defenders.includes(i)){
+      cell.classList.add('defender');
+      cell.innerHTML='<i class="ti ti-shield-filled" style="color:#fff;font-size:22px" aria-hidden="true"></i>';
+    }
+    cell.addEventListener('mousedown',onDown);
+    cell.addEventListener('mouseenter',onEnter);
+    cell.addEventListener('touchstart',onTouchStart,{passive:false});
+    cell.addEventListener('touchmove',onTouchMove,{passive:false});
+    grid.appendChild(cell);
+  }
+}
+
+const getCell=i=>document.querySelector(`[data-idx="${i}"]`);
+
+function startDrag(i){
+  if(tutorialPreviewActive||solved||puzzle.defenders.includes(i)) return;
+  if(!path.length){
+    if(puzzle.numbers[0]!==i){setStatus('Start from <b>1</b>!');return;}
+    dragging=true; path=[i]; renderPath();
+    return;
+  }
+  const last=path[path.length-1];
+  const existingIndex=path.indexOf(i);
+  if(existingIndex>=0){
+    dragging=true;
+    if(existingIndex<path.length-1){
+      path=path.slice(0,existingIndex+1);
+      renderPath();
+    }
+    return;
+  }
+  if(neighbors(last).includes(i)){
+    dragging=true;
+    extendPath(i);
+    return;
+  }
+  setStatus('Continue from the highlighted square.');
+}
+function onDown(e){e.preventDefault();startDrag(parseInt(this.dataset.idx));}
+function onEnter(){if(dragging&&!tutorialPreviewActive&&!solved) extendPath(parseInt(this.dataset.idx));}
+function onTouchStart(e){
+  e.preventDefault();
+  if(tutorialPreviewActive) return;
+  const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);
+  const cell=el?.closest?.('.tt-cell');
+  if(cell) startDrag(parseInt(cell.dataset.idx));
+}
+function onTouchMove(e){
+  e.preventDefault();
+  if(tutorialPreviewActive||!dragging||solved) return;
+  const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);
+  const cell=el?.closest?.('.tt-cell');
+  if(cell) extendPath(parseInt(cell.dataset.idx));
+}
+
+function extendPath(i){
+  if(tutorialPreviewActive) return;
+  if(puzzle.defenders.includes(i)) return;
+  const last=path[path.length-1];
+  if(i===last) return;
+  const bi=path.indexOf(i);
+  if(bi>=0){path=path.slice(0,bi+1);renderPath();return;}
+  if(!neighbors(last).includes(i)) return;
+  path.push(i);
+  renderPath();
+  setStatus(defaultGameStatus());
+  checkWin();
+}
+
+function renderPath(){
+  for(let i=0;i<TOTAL;i++){
+    const cell=getCell(i);
+    if(!cell||puzzle.defenders.includes(i)) continue;
+    cell.classList.remove('path','path-tail');
+    if(path.includes(i)) cell.classList.add(i===path[path.length-1]?'path-tail':'path');
+  }
+  drawCanvas();
+}
+
+function drawCanvas(){
+  const canvas=document.getElementById('tt-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(path.length<2) return;
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,100,0.8)';
+  ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();
+  path.forEach((ci,k)=>{
+    const {x,y}=cellCenterCanvas(ci);
+    k===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function checkWin(){
+  const def=new Set(puzzle.defenders);
+  let freeCount=0;
+  for(let i=0;i<TOTAL;i++) if(!def.has(i)) freeCount++;
+  if(path.length!==freeCount) return;
+  if(path[path.length-1]!==puzzle.numbers[puzzle.numbers.length-1]) return;
+  const pos=puzzle.numbers.map(n=>path.indexOf(n));
+  if(pos.some(p=>p<0)) return;
+  if(!pos.every((value,index)=>index===0||pos[index-1]<value)) return;
+  triggerWin();
+}
+
+function triggerWin(){
+  solved=true; dragging=false; stopTimer();
+  const t=fmtTime(timerSecs);
+  const completedChallenge=activeChallenge;
+  let completedState=null;
+  if(gameMode==='scored'&&completedChallenge) completedState=recordChallengeCompletion(completedChallenge,timerSecs);
+  let _rcPromise=null;
+  if(gameMode==='scored'&&completedChallenge&&completedState?.completedCount>=completedState.limit){
+    const scoreEntry=buildMatchScoreEntry(completedChallenge,completedState);
+    const totalTimeSecs=totalMatchSeconds(completedState.puzzleTimes);
+    _rcPromise=LEADERBOARD_HOOK
+      .submitScore(scoreEntry)
+      .then(async result=>{
+        if(!result?.ok) throw new Error(result?.error||result?.reason||'Leaderboard update failed');
+        mergeChallengeProgress(
+          completedChallenge.date,
+          completedChallengeIds(completedChallenge.date),
+          playerProfile,
+          {serverSynced:true,puzzleTimes:completedState.puzzleTimes}
+        );
+        await loadLeaderboards();
+        const ranks=await fetchRankings(scoreEntry.challengeDate||scoreEntry.date,scoreEntry.team||scoreEntry.country,totalTimeSecs);
+        return{scoreEntry,completedState,ranks};
+      })
+      .catch(async()=>{
+        syncChallengeProgressFromServer(playerProfile);
+        return{scoreEntry,completedState,ranks:null};
+      });
+  }
+  updatePlayPanel();
+  updateGameHeader();
+
+  document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
+
+  const finalTargetIdx=puzzle.numbers[puzzle.numbers.length-1];
+  const {x:bx,y:by}=cellCenter(finalTargetIdx);
+  const ball=document.getElementById('tt-ball');
+  const ballR=28;
+  ball.style.left=(bx-ballR)+'px';
+  ball.style.top=(by-ballR)+'px';
+  ball.style.transform='scale(0)';
+  ball.dataset.frame='0';
+  ball.style.display='block';
+  void ball.offsetWidth;
+  ball.classList.add('pop');
+
+  setTimeout(()=>{
+    ball.classList.remove('pop');
+    const goalEl=document.getElementById('tt-goal');
+    const goalRect=goalEl.getBoundingClientRect();
+    const targetZones=[0.2,0.5,0.8];
+    const targetZone=targetZones[Math.floor(Math.random()*targetZones.length)];
+    const targetX=goalRect.left+goalRect.width*targetZone-ballR;
+    const targetY=goalRect.top+goalRect.height/2-ballR;
+    const startY=by-ballR;
+    const startX=bx-ballR;
+    const duration=680;
+    let startTime=null, angle=0;
+
+    function animBall(ts){
+      if(!startTime) startTime=ts;
+      const elapsed=ts-startTime;
+      const p=Math.min(elapsed/duration,1);
+      const ease=p<0.5?2*p*p:-1+(4-2*p)*p;
+      const curX=startX+(targetX-startX)*ease;
+      const curY=startY+(targetY-startY)*ease;
+      const wobble=Math.sin(p*Math.PI*2)*6*(1-p);
+      angle+=5;
+      ball.style.top=curY+'px';
+      ball.style.left=(curX+wobble)+'px';
+      ball.dataset.frame=String(Math.floor(angle/20)%3);
+      ball.style.transform=`scale(1) rotate(${angle}deg)`;
+      if(p<1){
+        spinAnimId=requestAnimationFrame(animBall);
+      } else {
+        ball.style.display='none';
+        goalEl.classList.remove('shake');
+        void goalEl.offsetWidth;
+        goalEl.classList.add('shake');
+        setTimeout(()=>{
+          spawnConfetti();
+          document.getElementById('tt-celebration').classList.add('show');
+          document.getElementById('tt-goal-sub').textContent=challengeWinText(t);
+          document.getElementById('tt-celebration-dashboard').classList.toggle('hidden',gameMode!=='tutorial');
+          document.getElementById('tt-celebration-next').classList.toggle('hidden',!(gameMode==='scored'&&completedChallenge&&completedState&&completedState.completedCount<completedState.limit));
+          if(_rcPromise){const p=_rcPromise;_rcPromise=null;setTimeout(async()=>{const d=await p;if(d)showResultsCard(d.scoreEntry,d.completedState,d.ranks);},2800);}
+        },220);
+      }
+    }
+    spinAnimId=requestAnimationFrame(animBall);
+  },260);
+}
+
+function spawnConfetti(){
+  const wrap=document.getElementById('tt-confetti-wrap');
+  wrap.innerHTML='';
+  const cols=['#CC2027','#00529B','#006847','#C9A84C','#fff','#f5c842'];
+  for(let i=0;i<65;i++){
+    const d=document.createElement('div');
+    d.className='conf';
+    d.style.cssText=`left:${Math.random()*100}%;background:${cols[i%cols.length]};animation-duration:${.9+Math.random()*1.4}s;animation-delay:${Math.random()*.7}s;border-radius:${Math.random()>.5?'50%':'2px'}`;
+    wrap.appendChild(d);
+  }
+}
+
+function setGameControlsDisabled(disabled){
+  document.getElementById('tt-reset').disabled=disabled;
+}
+
+function clearTutorialPreview(){
+  tutorialPreviewTimers.forEach(id=>clearTimeout(id));
+  tutorialPreviewTimers=[];
+  tutorialPreviewActive=false;
+  setGameControlsDisabled(false);
+}
+
+function resetPath(){
+  if(tutorialPreviewActive||solved) return;
+  path=[]; dragging=false; renderPath();
+  setStatus(defaultGameStatus());
+}
+function startTimer(){stopTimer();timerSecs=0;updTimer();timerInterval=setInterval(()=>{timerSecs++;updTimer();},1000);}
+function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null;}}
+function updTimer(){document.getElementById('tt-timer').textContent=fmtTime(timerSecs);}
+function fmtTime(s){return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`;}
+function setStatus(h){document.getElementById('tt-status').innerHTML=h;}
+
+function loadSavedProfile(){
+  try {
+    const profile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');
+    if(profile?.username&&profile?.team) return profile;
+  } catch {}
+  return null;
+}
+
+function saveProfile(profile){
+  try { localStorage.setItem(PROFILE_KEY,JSON.stringify(profile)); } catch {}
+}
+
+function clearSavedProfile(){
+  try { localStorage.removeItem(PROFILE_KEY); } catch {}
+}
+
+function formatJerseyNumber(number){
+  return String(Math.max(1,Math.floor(Number(number)||1))).padStart(2,'0');
+}
+
+function setJerseyName(elementId,username){
+  const el=document.getElementById(elementId);
+  if(!el) return;
+  const name=String(username||'Player').trim()||'Player';
+  const displayName=name.toUpperCase();
+  const length=Array.from(displayName).length;
+  const size=Math.max(13,Math.min(20,Math.round((20-(Math.max(0,length-8)*.9))*10)/10));
+  el.textContent=displayName;
+  el.title=name;
+  el.style.setProperty('--jersey-name-size',`${size}px`);
+}
+
+function fallbackJerseyNumberForTeam(team){
+  const savedProfile=loadSavedProfile();
+  return savedProfile?.team===team&&savedProfile?.jerseyNumber?savedProfile.jerseyNumber:'01';
+}
+
+function hexToRgb(color){
+  const named={white:'#fff',black:'#111'};
+  let hex=(named[String(color).toLowerCase()]||String(color||'')).replace('#','').trim();
+  if(hex.length===3) hex=hex.split('').map(ch=>ch+ch).join('');
+  if(!/^[0-9a-f]{6}$/i.test(hex)) return null;
+  return {
+    r:parseInt(hex.slice(0,2),16),
+    g:parseInt(hex.slice(2,4),16),
+    b:parseInt(hex.slice(4,6),16)
+  };
+}
+
+function outlineForTextColor(color){
+  const rgb=hexToRgb(color);
+  if(!rgb) return '#fff';
+  const luminance=(0.2126*rgb.r+0.7152*rgb.g+0.0722*rgb.b)/255;
+  return luminance>.55?'#111':'#fff';
+}
+
+function applyJerseyColors(team){
+  const colors=TEAM_JERSEY_COLORS[team]||['#f5c842','#1e4d13','#102015'];
+  const jersey=document.getElementById('tt-jersey');
+  jersey.style.setProperty('--jersey-primary',colors[0]);
+  jersey.style.setProperty('--jersey-accent',colors[1]);
+  jersey.style.setProperty('--jersey-text',colors[2]);
+  jersey.style.setProperty('--jersey-outline',outlineForTextColor(colors[2]));
+  jersey.dataset.team=TEAM_FLAGS[team]||'';
+}
+
+function renderProfileCard(profile){
+  playerProfile=profile;
+  document.getElementById('tt-start-form').classList.add('hidden');
+  document.getElementById('tt-profile-card').classList.remove('hidden');
+  document.getElementById('tt-welcome-sub').textContent='Saved on this browser.';
+  setJerseyName('tt-jersey-name',profile.username);
+  document.getElementById('tt-jersey-number').textContent=formatJerseyNumber(profile.jerseyNumber);
+  document.getElementById('tt-profile-team').textContent=profile.team;
+  applyJerseyColors(profile.team);
+  updatePlayPanel();
+  syncChallengeProgressFromServer(profile);
+}
+
+async function refreshProfileRegistration(profile){
+  if(!profile?.username||!profile?.team||!leaderboardConfigured()) return;
+  try {
+    const result=await LEADERBOARD_HOOK.registerPlayer({username:profile.username,team:profile.team});
+    if(result?.ok){
+      const updatedProfile={username:result.username||profile.username,team:result.team||profile.team,jerseyNumber:result.jerseyNumber||profile.jerseyNumber};
+      saveProfile(updatedProfile);
+      renderProfileCard(updatedProfile);
+    }
+  } catch {}
+}
+
+function showProfileForm(profile=null){
+  document.getElementById('tt-profile-card').classList.add('hidden');
+  document.getElementById('tt-start-form').classList.remove('hidden');
+  const usernameInput=document.getElementById('tt-username');
+  const teamInput=document.getElementById('tt-team');
+  const editCtx=document.getElementById('tt-edit-context');
+  const userLabel=document.querySelector('label[for="tt-username"]');
+  const teamLabel=document.getElementById('tt-team-label');
+  if(profile){
+    document.getElementById('tt-welcome-sub').textContent='Update your username and/or country affiliation below.';
+    userLabel.textContent='New username';
+    teamLabel.textContent='New country affiliation';
+    document.getElementById('tt-current-username').textContent=profile.username;
+    const flag=TEAM_FLAGS[profile.team]||'';
+    const teamEl=document.getElementById('tt-current-team');
+    teamEl.innerHTML=flag?`<img src="https://flagcdn.com/w40/${flag}.png" alt=""> ${profile.team}`:profile.team;
+    editCtx.classList.remove('hidden');
+  } else {
+    document.getElementById('tt-welcome-sub').textContent='Build your player profile and choose your side.';
+    userLabel.textContent='Username';
+    teamLabel.textContent='Team you represent';
+    editCtx.classList.add('hidden');
+  }
+  usernameInput.value=profile?.username||'';
+  teamInput.value=profile?.team||'';
+  document.querySelectorAll('.tt-team-option').forEach(opt=>{
+    opt.setAttribute('aria-pressed',opt.dataset.team===teamInput.value?'true':'false');
+  });
+  updatePlayPanel();
+  usernameInput.focus();
+}
+
+function leaderboardConfigured(){
+  return !!_supabase;
+}
+
+function demoModeRequested(){
+  try {
+    const params=new URLSearchParams(window.location.search);
+    return params.get('demo')==='1'||params.get('autoplay')==='1';
+  } catch {
+    return false;
+  }
+}
+
+function startAutomatedDemo(){
+  playerProfile={username:'Demo Player',team:'United States',jerseyNumber:'00',demo:true};
+  clearTutorialPreview();
+  gameMode='tutorial';
+  activeChallenge=null;
+  showGame();
+  setupPuzzle(
+    {gridSize:TUTORIAL_SAMPLE.gridSize,playerCount:TUTORIAL_SAMPLE.playerCount,numbers:[...TUTORIAL_SAMPLE.numbers],defenders:[...TUTORIAL_SAMPLE.defenders]},
+    {startClock:true,statusText:'Demo mode — drag from 1, cover every open square, and finish on 4.'}
+  );
+  document.getElementById('tt-tutorial-note').classList.remove('hidden');
+}
+
+async function _fetchCountryScores(challengeDate,sortMode){
+  try{
+    let q=_supabase.from('individual_scores').select('user_id,challenge_date,puzzle1_time_secs,puzzle2_time_secs,puzzle3_time_secs,total_match_time_secs,server_timestamp');
+    if(challengeDate) q=q.eq('challenge_date',challengeDate);
+    const{data,error}=await q;
+    if(error) throw error;
+    const rows=data||[];
+    // Resolve teams from players table to prevent localStorage spoofing
+    const userIds=[...new Set(rows.filter(r=>r.user_id).map(r=>r.user_id))];
+    const teamMap={};
+    if(userIds.length){
+      const{data:pRows}=await _supabase.from('players').select('user_id,team').in('user_id',userIds);
+      (pRows||[]).forEach(p=>{teamMap[p.user_id]=p.team;});
+    }
+    const byTeam={};
+    rows.forEach(row=>{
+      const team=teamMap[row.user_id];
+      if(!team) return;
+      if(!byTeam[team]) byTeam[team]={team,plays:0,totalTime:0,fastestGoal:Infinity,lastPlayed:''};
+      const t=byTeam[team];
+      t.plays+=1; t.totalTime+=row.total_match_time_secs;
+      [row.puzzle1_time_secs,row.puzzle2_time_secs,row.puzzle3_time_secs].forEach(s=>{if(s<t.fastestGoal)t.fastestGoal=s;});
+      if(!t.lastPlayed||row.server_timestamp>t.lastPlayed) t.lastPlayed=row.server_timestamp;
+    });
+    const countries=Object.values(byTeam)
+      .map(t=>({
+        team:t.team,plays:t.plays,
+        fastestGoal:_fmtSecs(t.fastestGoal===Infinity?0:t.fastestGoal),
+        bestTime:_fmtSecs(t.fastestGoal===Infinity?0:t.fastestGoal),
+        averageTime:_fmtSecs(Math.round(t.totalTime/t.plays)),
+        averageMatchTime:_fmtSecs(Math.round(t.totalTime/t.plays)),
+        fastestGoalSeconds:t.fastestGoal===Infinity?0:t.fastestGoal,
+        averageTimeSeconds:Math.round(t.totalTime/t.plays),
+        lastPlayed:t.lastPlayed
+      }))
+      .sort((a,b)=>sortMode==='average'
+        ?a.averageTimeSeconds-b.averageTimeSeconds||a.fastestGoalSeconds-b.fastestGoalSeconds||b.plays-a.plays
+        :a.fastestGoalSeconds-b.fastestGoalSeconds||b.plays-a.plays)
+      .slice(0,LEADERBOARD_CONFIG.limit);
+    return{ok:true,countries};
+  }catch(err){return{ok:false,error:err.message};}
+}
+
+async function checkUsernameAvailable(username,currentUsername=''){
+  if(!_supabase||!username||username.length<2) return true;
+  if(username.toLowerCase()===currentUsername.toLowerCase()) return true;
+  const{data}=await _supabase.from('players').select('id').ilike('username',username).limit(1);
+  return !data?.length;
+}
+
+const PROFILE_CHANGE_LIMIT=3;
+function _getProfileChangeCount(){
+  try{
+    const s=JSON.parse(localStorage.getItem(PROFILE_CHANGE_KEY)||'{}');
+    return s.date===currentChallengeDate()?s.count||0:0;
+  }catch{return 0;}
+}
+function canChangeProfileToday(){
+  return _getProfileChangeCount()<PROFILE_CHANGE_LIMIT;
+}
+function recordProfileChange(){
+  localStorage.setItem(PROFILE_CHANGE_KEY,JSON.stringify({date:currentChallengeDate(),count:_getProfileChangeCount()+1}));
+}
+
+function renderLeaderboardMessage(message,targetId){
+  const list=document.getElementById(targetId);
+  if(!list) return;
+  list.innerHTML='';
+  const row=document.createElement('div');
+  row.className='tt-score-message';
+  row.textContent=message;
+  list.appendChild(row);
+}
+
+function renderIndividualLeaderboard(scores,targetId){
+  const list=document.getElementById(targetId);
+  if(!list) return;
+  list.innerHTML='';
+  if(!scores.length){
+    renderLeaderboardMessage('No scores yet. Be the first on the board.',targetId);
+    return;
+  }
+  scores.forEach((score,i)=>{
+    const row=document.createElement('div');
+    const rank=document.createElement('div');
+    const flag=document.createElement('img');
+    const name=document.createElement('div');
+    const time=document.createElement('div');
+    row.className='tt-score-row';
+    rank.className='tt-score-rank';
+    name.className='tt-score-name';
+    time.className='tt-score-time';
+    rank.textContent=String(i+1);
+    const flagCode=TEAM_FLAGS[score.team]||'un';
+    flag.src=`https://flagcdn.com/w40/${flagCode}.png`;
+    flag.alt='';
+    flag.title=score.team||'Team';
+    name.textContent=score.username||'Player';
+    name.title=score.team?`${score.username||'Player'} (${score.team})`:name.textContent;
+    time.textContent=String(score.totalMatchTime||score.time||score.timeFormatted||'00:00');
+    row.append(rank,flag,name,time);
+    list.appendChild(row);
+  });
+}
+
+function renderCountryLeaderboard(countries,targetId,metric='bestTime'){
+  const list=document.getElementById(targetId);
+  if(!list) return;
+  list.innerHTML='';
+  if(!countries.length){
+    renderLeaderboardMessage('No country scores yet.',targetId);
+    return;
+  }
+  countries.forEach((country,i)=>{
+    const row=document.createElement('div');
+    const rank=document.createElement('div');
+    const flag=document.createElement('img');
+    const name=document.createElement('div');
+    const time=document.createElement('div');
+    row.className='tt-score-row';
+    rank.className='tt-score-rank';
+    name.className='tt-score-name';
+    time.className='tt-score-time';
+    rank.textContent=String(i+1);
+    const flagCode=TEAM_FLAGS[country.team]||'un';
+    flag.src=`https://flagcdn.com/w40/${flagCode}.png`;
+    flag.alt='';
+    flag.title=country.team||'Team';
+    name.textContent=country.team||'Team';
+    name.title=`${country.plays||0} plays, fastest goal ${country.fastestGoal||country.bestTime||'00:00'}, avg match ${country.averageTime||country.averageMatchTime||'00:00'}`;
+    time.textContent=String(country[metric]||'00:00');
+    row.append(rank,flag,name,time);
+    list.appendChild(row);
+  });
+}
+
+function loadLeaderboards(){
+  if(!leaderboardConfigured()){
+    renderLeaderboardMessage('Connect Supabase to enable shared scores.','tt-intro-individual-list');
+    renderLeaderboardMessage('Connect Supabase to enable shared scores.','tt-intro-country-fastest-list');
+    renderLeaderboardMessage('Connect Supabase to enable shared scores.','tt-intro-country-average-list');
+    return Promise.resolve();
+  }
+  const challengeDate=currentDailyChallenge?.date||currentChallengeDate();
+  renderLeaderboardMessage('Loading players...','tt-intro-individual-list');
+  renderLeaderboardMessage('Loading fastest...','tt-intro-country-fastest-list');
+  renderLeaderboardMessage('Loading averages...','tt-intro-country-average-list');
+  return Promise.allSettled([LEADERBOARD_HOOK.fetchScores(challengeDate),LEADERBOARD_HOOK.fetchFastestCountries(challengeDate),LEADERBOARD_HOOK.fetchAverageCountries(challengeDate)]).then(([scoresResult,fastestCountriesResult,averageCountriesResult])=>{
+    const scoresPayload=scoresResult.status==='fulfilled'?scoresResult.value:null;
+    const fastestCountriesPayload=fastestCountriesResult.status==='fulfilled'?fastestCountriesResult.value:null;
+    const averageCountriesPayload=averageCountriesResult.status==='fulfilled'?averageCountriesResult.value:null;
+    if(scoresPayload?.ok){
+      renderIndividualLeaderboard(scoresPayload.scores||[],'tt-intro-individual-list');
+    } else {
+      renderLeaderboardMessage('Player leaderboard is unavailable.','tt-intro-individual-list');
+    }
+    if(fastestCountriesPayload?.ok){
+      renderCountryLeaderboard(fastestCountriesPayload.countries||[],'tt-intro-country-fastest-list','fastestGoal');
+    } else {
+      renderLeaderboardMessage('Fastest countries are unavailable.','tt-intro-country-fastest-list');
+    }
+    if(averageCountriesPayload?.ok){
+      renderCountryLeaderboard(averageCountriesPayload.countries||[],'tt-intro-country-average-list','averageTime');
+    } else {
+      renderLeaderboardMessage('Fastest country averages are unavailable.','tt-intro-country-average-list');
+    }
+  }).catch(()=>{
+    renderLeaderboardMessage('Leaderboard is unavailable.','tt-intro-individual-list');
+    renderLeaderboardMessage('Leaderboard is unavailable.','tt-intro-country-fastest-list');
+    renderLeaderboardMessage('Leaderboard is unavailable.','tt-intro-country-average-list');
+  });
+}
+
+function setupPuzzle(nextPuzzle,{startClock=true,statusText=null}={}){
+  solved=false; dragging=false; path=[];
+  applyBoardLayout(nextPuzzle.gridSize||5);
+  if(spinAnimId){cancelAnimationFrame(spinAnimId);spinAnimId=null;}
+  document.getElementById('tt-celebration').classList.remove('show');
+  document.getElementById('tt-celebration-dashboard').classList.add('hidden');
+  document.getElementById('tt-celebration-next').classList.add('hidden');
+
+  document.getElementById('tt-confetti-wrap').innerHTML='';
+  document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
+  const ball=document.getElementById('tt-ball');
+  ball.style.display='none'; ball.classList.remove('pop');
+  ball.style.transform='scale(0)';
+  ball.dataset.frame='0';
+  document.getElementById('tt-goal').classList.remove('shake');
+  puzzle=nextPuzzle; buildGrid(puzzle); renderPath();
+  if(startClock){
+    startTimer();
+  } else {
+    stopTimer();
+    timerSecs=0;
+    updTimer();
+  }
+  setStatus(statusText||defaultGameStatus());
+}
+
+function defaultGameStatus(){
+  if(gameMode==='tutorial') return 'Tutorial run — practice without submitting a score.';
+  if(activeChallenge) return `Puzzle ${activeChallenge.puzzleNumber} of ${DAILY_PUZZLE_LIMIT} — cover every square in order`;
+  return 'Drag from <b>1</b> — cover every square in order';
+}
+
+function newPuzzle(){
+  clearTutorialPreview();
+  if(gameMode==='tutorial'){
+    startTutorialPreview();
+    return;
+  }
+  if(activeChallenge&&!solved){
+    setStatus('Finish this puzzle before moving on.');
+    return;
+  }
+  startNextChallengePuzzle();
+}
+
+function startTutorialPreview(){
+  clearTutorialPreview();
+  activeChallenge=null;
+  tutorialPreviewActive=true;
+  setupPuzzle(
+    {gridSize:TUTORIAL_SAMPLE.gridSize,playerCount:TUTORIAL_SAMPLE.playerCount,numbers:[...TUTORIAL_SAMPLE.numbers],defenders:[...TUTORIAL_SAMPLE.defenders]},
+    {startClock:false,statusText:'Watch the sample run, then play this same board.'}
+  );
+  setGameControlsDisabled(true);
+  const stepDelay=7000/(TUTORIAL_SAMPLE.solution.length-1);
+  TUTORIAL_SAMPLE.solution.forEach((cell,i)=>{
+    const timer=setTimeout(()=>{
+      if(!tutorialPreviewActive) return;
+      path=TUTORIAL_SAMPLE.solution.slice(0,i+1);
+      dragging=false;
+      renderPath();
+      if(i===TUTORIAL_SAMPLE.solution.length-1){
+        const finishTimer=setTimeout(finishTutorialPreview,300);
+        tutorialPreviewTimers.push(finishTimer);
+      }
+    },Math.round(i*stepDelay));
+    tutorialPreviewTimers.push(timer);
+  });
+}
+
+function finishTutorialPreview(){
+  tutorialPreviewTimers=[];
+  tutorialPreviewActive=false;
+  path=[]; dragging=false;
+  renderPath();
+  setGameControlsDisabled(false);
+  startTimer();
+  setStatus('Your turn — play the same tutorial board.');
+}
+
+function showGame(){
+  document.getElementById('tt-intro').classList.add('hidden');
+  document.getElementById('tt-root').classList.remove('hidden');
+  updateGameHeader();
+  document.getElementById('tt-tutorial-note').classList.toggle('hidden',gameMode!=='tutorial');
+}
+
+function showIntro(){
+  clearTutorialPreview();
+  stopTimer();
+  dragging=false;
+  activeChallenge=null;
+  if(spinAnimId){cancelAnimationFrame(spinAnimId);spinAnimId=null;}
+  document.getElementById('tt-root').classList.add('hidden');
+  document.getElementById('tt-intro').classList.remove('hidden');
+  document.getElementById('tt-celebration').classList.remove('show');
+  document.getElementById('tt-celebration-dashboard').classList.add('hidden');
+  document.getElementById('tt-celebration-next').classList.add('hidden');
+
+  document.getElementById('tt-confetti-wrap').innerHTML='';
+  document.getElementById('tt-canvas').getContext('2d').clearRect(0,0,340,340);
+  document.getElementById('tt-ball').style.display='none';
+  updTimer();
+  updatePlayPanel();
+  loadLeaderboards();
+  const profileCard=document.getElementById('tt-profile-card');
+  (profileCard.classList.contains('hidden')?document.getElementById('tt-username'):document.getElementById('tt-start')).focus();
+}
+
+document.getElementById('tt-reset').addEventListener('click',resetPath);
+document.getElementById('tt-dashboard-refresh').addEventListener('click',loadLeaderboards);
+document.getElementById('tt-home').addEventListener('click',showIntro);
+document.getElementById('tt-celebration-next').addEventListener('click',newPuzzle);
+document.getElementById('tt-celebration-dashboard').addEventListener('click',showIntro);
+document.addEventListener('mouseup',()=>{dragging=false;});
+document.addEventListener('touchend',()=>{dragging=false;});
+
+async function fetchRankings(date,team,totalTimeSecs){
+  if(!_supabase) return null;
+  try{
+    const[
+      {count:fasterGlobal},
+      {count:globalTotal},
+      {count:fasterCountry},
+      {count:countryTotal}
+    ]=await Promise.all([
+      _supabase.from('individual_scores').select('*',{count:'exact',head:true}).eq('challenge_date',date).lt('total_match_time_secs',totalTimeSecs),
+      _supabase.from('individual_scores').select('*',{count:'exact',head:true}).eq('challenge_date',date),
+      _supabase.from('individual_scores').select('*',{count:'exact',head:true}).eq('challenge_date',date).ilike('team',team).lt('total_match_time_secs',totalTimeSecs),
+      _supabase.from('individual_scores').select('*',{count:'exact',head:true}).eq('challenge_date',date).ilike('team',team)
+    ]);
+    return{globalRank:(fasterGlobal||0)+1,globalTotal:globalTotal||0,countryRank:(fasterCountry||0)+1,countryTotal:countryTotal||0};
+  }catch{return null;}
+}
+
+function applyRcJerseyColors(team){
+  const colors=TEAM_JERSEY_COLORS[team]||['#f5c842','#1e4d13','#102015'];
+  const j=document.getElementById('tt-rc-jersey');
+  if(!j) return;
+  j.style.setProperty('--jersey-primary',colors[0]);
+  j.style.setProperty('--jersey-accent',colors[1]);
+  j.style.setProperty('--jersey-text',colors[2]);
+  j.style.setProperty('--jersey-outline',outlineForTextColor(colors[2]));
+  j.dataset.team=TEAM_FLAGS[team]||'';
+}
+
+function showResultsCard(scoreEntry,completedState,ranks){
+  const date=scoreEntry.challengeDate||scoreEntry.date||currentChallengeDate();
+  const team=scoreEntry.team||scoreEntry.country||'';
+  const username=scoreEntry.username||scoreEntry.playerName||'';
+  const puzzleTimes=completedState.puzzleTimes||[];
+
+  // Format date
+  const d=new Date(date+'T12:00:00Z');
+  document.getElementById('tt-rc-date').textContent=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'UTC'});
+
+  // Puzzle times
+  document.getElementById('tt-rc-p1').textContent=fmtTime(puzzleTimes[0]||0);
+  document.getElementById('tt-rc-p2').textContent=fmtTime(puzzleTimes[1]||0);
+  document.getElementById('tt-rc-p3').textContent=fmtTime(puzzleTimes[2]||0);
+  document.getElementById('tt-rc-total').textContent=scoreEntry.totalMatchTime||fmtTime(totalMatchSeconds(puzzleTimes));
+
+  // Player identity
+  document.getElementById('tt-rc-player-name').textContent=username;
+  document.getElementById('tt-rc-team-name').textContent=team;
+  const flag=TEAM_FLAGS[team]||'';
+  const flagEl=document.getElementById('tt-rc-flag');
+  if(flag){flagEl.src=`https://flagcdn.com/w80/${flag}.png`;flagEl.alt=team;flagEl.style.display='';}
+  else{flagEl.style.display='none';}
+
+  // Jersey
+  setJerseyName('tt-rc-jersey-name',username);
+  document.getElementById('tt-rc-jersey-number').textContent=playerProfile.jerseyNumber||'01';
+  applyRcJerseyColors(team);
+
+  // Country rank label with flag
+  const countryLbl=document.getElementById('tt-rc-country-lbl');
+  countryLbl.textContent=(team?team+' ':'')+'Rank';
+
+  // Rankings
+  if(ranks){
+    document.getElementById('tt-rc-global-num').textContent='#'+ranks.globalRank;
+    document.getElementById('tt-rc-global-sub').textContent='of '+ranks.globalTotal.toLocaleString()+' players';
+    document.getElementById('tt-rc-country-num').textContent='#'+ranks.countryRank;
+    document.getElementById('tt-rc-country-sub').textContent='of '+ranks.countryTotal.toLocaleString()+' players';
+  }else{
+    document.getElementById('tt-rc-global-num').textContent='–';
+    document.getElementById('tt-rc-global-sub').textContent='Rankings unavailable';
+    document.getElementById('tt-rc-country-num').textContent='–';
+    document.getElementById('tt-rc-country-sub').textContent='';
+  }
+
+  document.getElementById('tt-results-overlay').classList.remove('hidden');
+}
+
+function initWelcome(){
+  const teamInput=document.getElementById('tt-team');
+  const teamGrid=document.getElementById('tt-team-grid');
+  const loginButton=document.getElementById('tt-login');
+  const startButton=document.getElementById('tt-start');
+  const tutorialButton=document.getElementById('tt-tutorial');
+  const changeProfileButton=document.getElementById('tt-change-profile');
+  const usernameInput=document.getElementById('tt-username');
+  const usernameStatus=document.getElementById('tt-username-status');
+  const error=document.getElementById('tt-welcome-error');
+  let _usernameAvailable=true;
+  let _usernameCheckTimer=null;
+  teamInput.value='';
+  teamGrid.innerHTML='';
+  WORLD_CUP_GROUPS.forEach(group=>{
+    group.teams.forEach(team=>{
+      const button=document.createElement('button');
+      const img=document.createElement('img');
+      button.type='button';
+      button.className='tt-team-option';
+      button.title=team.name;
+      button.setAttribute('aria-label',team.name);
+      button.setAttribute('aria-pressed','false');
+      button.dataset.team=team.name;
+      img.src=`https://flagcdn.com/w80/${team.flag}.png`;
+      img.srcset=`https://flagcdn.com/w80/${team.flag}.png 1x, https://flagcdn.com/w160/${team.flag}.png 2x`;
+      img.alt='';
+      img.loading='lazy';
+      img.decoding='async';
+      button.appendChild(img);
+      button.addEventListener('click',()=>{
+        teamGrid.querySelectorAll('.tt-team-option').forEach(opt=>opt.setAttribute('aria-pressed','false'));
+        button.setAttribute('aria-pressed','true');
+        teamInput.value=team.name;
+        error.textContent='';
+      });
+      teamGrid.appendChild(button);
+    });
+  });
+  updTimer();
+  loadLeaderboards();
+  fetchTodayPuzzles().then(()=>updatePlayPanel());
+  setStatus('Enter your username and choose your team to start');
+  usernameInput.addEventListener('input',()=>{error.textContent='';});
+  async function startSelectedGame(mode){
+    if(!playerProfile.username||!playerProfile.team){
+      error.textContent='Login before starting a game.';
+      return;
+    }
+    if(mode==='scored'){
+      error.textContent='Loading today\'s match...';
+      await fetchTodayPuzzles();
+      let state=getChallengeState();
+      if(!isChallengeProgressFresh(playerProfile,state.date)){
+        error.textContent='Checking match status...';
+        state=await syncChallengeProgressFromServer(playerProfile);
+      }
+      if(!state.available||state.completedCount>=state.limit){
+        error.textContent=challengeAvailabilityText(state);
+        updatePlayPanel();
+        return;
+      }
+    }
+    gameMode=mode;
+    error.textContent='';
+    showGame();
+    if(mode==='tutorial'){
+      startTutorialPreview();
+    } else {
+      startNextChallengePuzzle();
+    }
+  }
+  async function saveSelectedProfile(){
+    const username=usernameInput.value.trim();
+    const team=teamInput.value;
+    if(!username||!team){
+      error.textContent='Enter a username and choose a team.';
+      return;
+    }
+    if(!_usernameAvailable){
+      error.textContent='That username is already taken. Please choose another.';
+      return;
+    }
+    loginButton.disabled=true;
+    startButton.disabled=true;
+    tutorialButton.disabled=true;
+    loginButton.textContent='Saving...';
+    error.textContent='Saving...';
+    const oldProfile=loadSavedProfile()||playerProfile;
+    let profile={username,team,jerseyNumber:'01'};
+    try {
+      if(leaderboardConfigured()){
+        let result;
+        if(_isEditingProfile&&oldProfile?.username){
+          result=await LEADERBOARD_HOOK.updateProfile({oldUsername:oldProfile.username,oldTeam:oldProfile.team,newUsername:username,newTeam:team});
+          if(result?.ok) recordProfileChange();
+        } else {
+          result=await LEADERBOARD_HOOK.registerPlayer({username,team});
+        }
+        if(result?.ok){
+          profile={username:result.username||username,team:result.team||team,jerseyNumber:result.jerseyNumber||'01'};
+        } else {
+          profile={...profile,jerseyNumber:fallbackJerseyNumberForTeam(team),needsRegistration:true};
+        }
+      }
+      saveProfile(profile);
+      renderProfileCard(profile);
+      error.textContent='';
+    } catch {
+      profile={username,team,jerseyNumber:fallbackJerseyNumberForTeam(team),needsRegistration:true};
+      saveProfile(profile);
+      renderProfileCard(profile);
+      error.textContent='Profile saved locally. Jersey number may update once Supabase is connected.';
+    } finally {
+      _isEditingProfile=false;
+      loginButton.disabled=false;
+      loginButton.textContent='Login';
+      updatePlayPanel();
+    }
+  }
+  usernameInput.addEventListener('input',()=>{
+    clearTimeout(_usernameCheckTimer);
+    const val=usernameInput.value.trim();
+    usernameStatus.textContent='';
+    usernameStatus.className='';
+    if(!val||val.length<2){_usernameAvailable=true;return;}
+    usernameStatus.textContent='Checking...';
+    usernameStatus.className='checking';
+    _usernameCheckTimer=setTimeout(async()=>{
+      const currentUsername=_isEditingProfile?(loadSavedProfile()||playerProfile)?.username||'':'';
+      const available=await checkUsernameAvailable(val,currentUsername);
+      _usernameAvailable=available;
+      usernameStatus.textContent=available?'✓ Username available':'✗ Username already taken';
+      usernameStatus.className=available?'available':'taken';
+    },400);
+  });
+
+  document.getElementById('tt-start-form').addEventListener('submit',e=>{
+    e.preventDefault();
+    saveSelectedProfile();
+  });
+  startButton.addEventListener('click',()=>startSelectedGame('scored'));
+  tutorialButton.addEventListener('click',()=>startSelectedGame('tutorial'));
+  const profileCardError=document.getElementById('tt-profile-card-error');
+  changeProfileButton.addEventListener('click',()=>{
+    if(!canChangeProfileToday()){
+      profileCardError.textContent=`You've already reached the daily limit of profile changes for today.`;
+      return;
+    }
+    profileCardError.textContent='';
+    _isEditingProfile=true;
+    const currentProfile=loadSavedProfile()||playerProfile;
+    loginButton.textContent='Save changes';
+    showProfileForm(currentProfile);
+  });
+  if(demoModeRequested()){
+    startAutomatedDemo();
+    return;
+  }
+  if(!_authSession&&_supabase){
+    loadLeaderboards();
+    return;
+  }
+  const savedProfile=loadSavedProfile();
+  if(savedProfile){
+    renderProfileCard(savedProfile);
+    refreshProfileRegistration(savedProfile);
+  } else if(_authSession&&_supabase){
+    (async()=>{
+      try{
+        const{data:existing}=await _supabase.from('players').select('*').eq('user_id',_authSession.user.id).maybeSingle();
+        if(existing){
+          const profile={username:existing.username,team:existing.team,jerseyNumber:String(existing.jersey_number).padStart(2,'0')};
+          saveProfile(profile);
+          renderProfileCard(profile);
+          updatePlayPanel();
+        } else {
+          showProfileForm();
+        }
+      } catch {
+        showProfileForm();
+      }
+    })();
+  } else {
+    showProfileForm();
+  }
+}
+
+async function initAuth(){
+  if(!_supabase) return;
+  try{
+    const{data:{session}}=await _supabase.auth.getSession();
+    _authSession=session;
+    if(!session){
+      document.getElementById('tt-start-form').classList.add('hidden');
+      document.getElementById('tt-profile-card').classList.add('hidden');
+      document.getElementById('tt-google-gate').classList.remove('hidden');
+      document.getElementById('tt-google-gate-btn').addEventListener('click',()=>{
+        _supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+      });
+    }
+  }catch(e){console.warn('Auth init failed:',e);}
+}
+
+function initSplashScreen(){
+  const splash=document.getElementById('tt-splash');
+  if(!splash) return;
+  const body=document.body;
+  const removeSplash=()=>{
+    body.classList.remove('tt-splash-active','tt-splash-reveal');
+    if(splash.isConnected) splash.remove();
+  };
+  splash.addEventListener('animationend',removeSplash,{once:true});
+  window.setTimeout(()=>{
+    if(splash.isConnected){
+      splash.classList.add('tt-splash-exit');
+      window.setTimeout(()=>{
+        if(splash.isConnected) body.classList.add('tt-splash-reveal');
+      },500);
+    }
+  },1700);
+  window.setTimeout(removeSplash,3200);
+}
+
+initSplashScreen();
+initAuth().then(()=>initWelcome());
+document.getElementById('tt-rc-close').addEventListener('click',()=>{
+  document.getElementById('tt-results-overlay').classList.add('hidden');
+  showIntro();
+});
+</script>
 </body>
 </html>
